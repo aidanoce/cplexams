@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPL General Knowledge</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1d2330; --muted: #5b6475;
+    --accent: #2563eb; --good: #15803d; --bad: #b91c1c; --border: #d6dae3;
+    --good-bg: #dcfce7; --sky-top: #d6e8fb; --bad-bg: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c; --card: #1c2130; --text: #e6e9f0; --muted: #9aa3b5;
+      --accent: #60a5fa; --good: #4ade80; --bad: #f87171; --border: #2f3646;
+      --good-bg: #163d26; --sky-top: #16203a; --bad-bg: #4a1d1d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c; --card: #1c2130; --text: #e6e9f0; --muted: #9aa3b5;
+    --accent: #60a5fa; --good: #4ade80; --bad: #f87171; --border: #2f3646;
+    --good-bg: #163d26; --sky-top: #16203a; --bad-bg: #4a1d1d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: linear-gradient(180deg, var(--sky-top) 0, var(--bg) 420px) var(--bg);
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: env(safe-area-inset-top, 0px) 12px env(safe-area-inset-bottom, 0px);
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><g fill='%23708090' transform='rotate(-20 90 90)'><path d='M90 22 C94 22 96 26 96 32 L96 70 L150 96 L150 106 L96 96 L94 136 L110 148 L110 156 L90 150 L70 156 L70 148 L86 136 L84 96 L30 106 L30 96 L84 70 L84 32 C84 26 86 22 90 22 Z'/></g></svg>");
+    background-size: 180px 180px; opacity: .10;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 0 40px; position: relative; z-index: 1; }
+  h1 { font-size: 1.35rem; margin: 8px 0 4px; }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 16px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  select, button {
+    font: inherit; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  .progress { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+  .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .85rem; margin-bottom: 12px; }
+  .qtext { font-size: 1.05rem; margin: 6px 0 14px; white-space: pre-line; }
+  .qhead { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+  .star { font-size: 1.5rem; background: none; border: none; color: var(--muted); padding: 0 4px; line-height: 1; }
+  .star.on { color: #f5b301; }
+  .topic { font-size: .8rem; color: var(--accent); margin: -6px 0 10px; }
+  .expl { margin-top: 8px; color: var(--text); font-size: .93rem; }
+  .qimg { max-width: 100%; display: block; margin: 6px 0 12px; background: #fff; border-radius: 8px; padding: 6px; }
+  .qnote { font-size: .8rem; color: var(--muted); font-style: italic; margin-top: -8px; margin-bottom: 12px; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    text-align: left; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: .98rem; width: 100%;
+  }
+  .opt .letter { display: inline-block; width: 26px; font-weight: 600; color: var(--muted); }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .opt.correct { background: var(--good-bg); border-color: var(--good); }
+  .opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+  .feedback { margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: .95rem; display: none; }
+  .feedback.good { display: block; background: var(--good-bg); color: var(--good); }
+  .feedback.bad { display: block; background: var(--bad-bg); color: var(--bad); }
+  .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .score-big { font-size: 2.2rem; font-weight: 700; margin: 6px 0; }
+  .missed { margin-top: 12px; }
+  .missed li { margin-bottom: 10px; }
+  .hidden { display: none !important; }
+  .toggle { color: var(--muted); font-size: .9rem; display: flex; align-items: center; gap: 6px; }
+  .theme-btn { margin-left: auto; }
+  .footer-note { color: var(--muted); font-size: .8rem; margin-top: 16px; }
+
+  .qdiag { background: var(--card); border-radius: 8px; margin: 4px 0 14px; }
+  .qdiag svg { width: 100%; height: auto; display: block; }
+
+  .hub-head { display:flex; align-items:center; gap:10px; }
+  .cards { display:grid; grid-template-columns: 1fr; gap:14px; margin-top:8px; }
+  @media (min-width: 620px) { .cards { grid-template-columns: 1fr 1fr; } }
+  .card { text-align:left; background: var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; color:var(--text); font: inherit; }
+  .card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .card svg { width:100%; height:auto; display:block; border-radius:10px; background: var(--sky-top); margin-bottom:12px; }
+  .card h2 { font-size:1.1rem; margin:0 0 4px; }
+  .card p { margin:0; color:var(--muted); font-size:.9rem; }
+  .count { display:inline-block; margin-top:8px; color:var(--accent); font-size:.85rem; font-weight:600; }
+  .card-img { width:100%; height:auto; display:block; border-radius:10px; background:var(--sky-top); margin-bottom:12px; }
+  .badge { display:inline-block; margin-top:8px; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-size:.75rem; font-weight:600; }
+  .study-item { border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:12px 0; background:var(--card); }
+  .study-item summary { cursor:pointer; font-weight:600; }
+  .study-img { width:100%; height:auto; display:block; border-radius:8px; margin:10px 0; background:#fff; }
+  .study-body { line-height:1.5; }
+  .back { margin-bottom:12px; }
+  .app-head h1 { font-size:1.25rem; }
+.site-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 8px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.site-tabs a,.site-tabs span{padding:8px 18px;border-radius:8px;border:1px solid var(--border);color:var(--text);text-decoration:none;font-weight:600;font-size:.95rem;background:var(--bg)}
+.site-tabs a.active,.site-tabs span.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.site-tabs span.soon{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<nav class="site-tabs"><a href="index.html" class="">Home</a><a href="cpl.html" class="active">CPL</a><a href="atpl.html" class="">ATPL</a><a href="irex-questions.html" class="">IREX</a><a href="rpl.html" class="">RPL</a><a href="ppl.html" class="">PPL</a></nav>
+<div id="app-agk" class="wrap">
+  <button class="back" onclick="closeApps()">&larr; All subjects</button>
+  <div class="app-head" style="display:flex;align-items:center;gap:10px;">
+    <h1 style="flex:1">CPL General Knowledge</h1>
+    <button class="theme-btn" id="agk-themeBtn" title="Toggle light/dark">Theme</button>
+  </div>
+    <div class="panel">
+    <div id="agk-setup">
+      <div class="controls">
+        <label for="agk-testSel">Set:</label>
+        <select id="agk-testSel"></select>
+        <label class="toggle"><input type="checkbox" id="agk-shuffleChk"> Shuffle questions</label>
+      </div>
+      <button class="primary" id="agk-startBtn">Start quiz</button>
+    </div>
+
+    <div id="agk-quiz" class="hidden">
+      <div class="progress"><div id="agk-bar"></div></div>
+      <div class="meta"><span id="agk-counter"></span><span id="agk-scoreLive"></span></div>
+      <div class="qhead"><div class="qtext" id="agk-qtext"></div><button id="agk-starBtn" class="star" title="Star to review later" aria-label="Star question">☆</button></div>
+      <div class="qdiag hidden" id="agk-qdiag"></div>
+      <div class="opts" id="agk-opts"></div>
+      <div class="feedback" id="agk-feedback"></div>
+      <div class="nav">
+        <button id="agk-quitBtn">Quit</button>
+        <button class="ghost" id="agk-prevBtn" disabled>← Back</button>
+        <button class="primary" id="agk-actionBtn" disabled>Submit</button>
+      </div>
+    </div>
+
+    <div id="agk-results" class="hidden">
+      <div>Your score</div>
+      <div class="score-big" id="agk-finalScore"></div>
+      <div id="agk-finalMsg" style="color:var(--muted)"></div>
+      <div class="nav" style="justify-content:flex-start">
+        <button class="primary" id="agk-retryBtn">Retry missed questions</button>
+        <button id="agk-restartBtn">Back to start</button>
+      </div>
+      <div id="agk-missedWrap">
+        <h3>Questions you missed</h3>
+        <ol class="missed" id="agk-missedList"></ol>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<script>
+function shuffleOpts(q) {
+  // Shuffle the A-D options (and the correct answer with them). Questions whose options refer to other options stay as written.
+  const refers = q.o.some(x => /\b(all|none|both|neither)\b|\[[a-e]\]|\b[a-e]\)|\bas above\b|\babove\b/i.test(x));
+  if (refers || q.o.length < 2) return q;
+  const order = q.o.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return { ...q, o: order.map(i => q.o[i]), a: order.indexOf(q.a) };
+}
+function openApp(id){}
+function closeApps(){}
+document.documentElement.setAttribute("data-theme", document.documentElement.getAttribute("data-theme")||"");
+(function () {
+  const PFX = "agk-";
+  const ROOT = document.getElementById("app-agk");
+  let sel = [], diagOn = false;
+
+// a = index of the correct option (0 = [a], 1 = [b], 2 = [c], 3 = [d])
+const CHAPTER_QS = [
+{"t": "Engines & Oil", "n": 1, "q": "The pressure exerted on the piston during the power stroke increases as the mass of charge induced", "o": ["increases and combustion temperature increases", "decreases and combustion temperature increases", "increases and combustion temperature decreases", "decreases and combustion temperature decreases"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 2, "q": "As the throttle is moved towards the fully open position", "o": ["manifold pressure increases and mass flow decreases", "manifold pressure decreases and mass flow increases", "manifold pressure increases and mass flow increases", "manifold pressure decreases and mass flow decreases"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 3, "q": "The volumetric efficiency of an engine depends upon", "o": ["throttle position, ambient temperature, ambient pressure and RPM", "throttle position only", "throttle position, ambient temperature, ambient pressure but not RPM", "throttle position and mixture strength"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 4, "q": "The best action to take at the onset of detonation in an engine is", "o": ["lean the mixture and reduce the power", "lean the mixture and increase the power", "decrease the indicated air speed and maintain the power", "select mixture fully rich and decrease the power"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 5, "q": "The onset of detonation in an engine is indicated by", "o": ["vibration, rising temperatures and reduced indicated air speed", "vibration, falling temperatures and reduced indicated air speed", "vibration, rising temperatures and increased indicated air speed", "vibration, falling temperatures and increased indicated air speed"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 6, "q": "One of the limitations applying to increased RPM for increased power in a piston engine is", "o": ["high fuel consumption", "excessive propeller tip speed", "high oil pressure", "high cylinder head temperature"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 7, "q": "The warm up period for an engine prior to take off provides", "o": ["proper oil viscosity and uniform heating of engine components", "higher oil pressure for take off", "a means of expelling moisture from the engine crankcase", "adequate fuel pressure for take off"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 8, "q": "If an engine is overheating during a long climb, an appropriate pilot action would be", "o": ["raise the nose to reduce indicated air speed", "lean the mixture to best economy", "reduce power and indicated air speed", "increase indicated air speed, richen the mixture and if necessary reduce power"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 9, "q": "If cylinder head temperatures are becoming too low during a long descent, the pilot should", "o": ["reduce indicated air speed and power", "increase indicated air speed and reduce power", "increase indicated air speed and power", "reduce indicated air speed and increase power"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 10, "q": "The octane rating of a fuel is a measure of", "o": ["its specific gravity", "its resistance to detonation", "its resistance to vaporisation", "its anti-misting properties in the event of fire"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 11, "q": "A horizontally opposed engine should be heated at about 1000 RPM after a cold start rather than idle to avoid", "o": ["damage due to vibration at low RPM", "excessive cylinder wear due to poor lubrication at low RPM", "damage due to low oil pressure at idle", "a large increase in the time required to raise engine temperatures"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 12, "q": "A radial engine always has an uneven number of cylinders, commonly 5, 7 or 11. This is a necessary design feature to ensure", "o": ["uniformly spaced power strokes during the cycle", "adequate engine cooling", "correct mass balancing during high power operation", "enough space is left between cylinders for proper air cooling during flight"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 13, "q": "The function of oil in an engine is to", "o": ["clean", "lubricate", "cool", "all of the above"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 14, "q": "The viscosity of an oil is a measure of", "o": ["the oil's ability to flow", "the oil's resistance to flow", "the temperature at which it will burn", "the oil's detergent properties"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 15, "q": "The purpose of an oil cooler bypass is", "o": ["to prevent the oil from becoming too hot", "to return overheated oil to the cooler", "to prevent oil from passing through the cooler if it is already cold", "to allow oil to bypass the cooler if the cooler becomes blocked"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 16, "q": "If airflow to the oil cooler is interrupted by an obstruction in the duct", "o": ["oil temperature and oil pressure will rise", "oil temperature will drop and oil pressure will rise", "oil temperature will rise and oil pressure will fall", "oil temperature and oil pressure will both fall"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 17, "q": "One cause of high oil temperature and low oil pressure could be", "o": ["very low oil level in the sump", "the oil's viscosity being too high for the engine type", "the oil sump being overfilled", "the oil cooler bypass not working"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 18, "q": "The purpose of gearing a propeller in an aircraft engine is to permit the propeller to turn at", "o": ["higher RPM and lower torque than the engine", "lower RPM and lower torque than the engine", "lower RPM and higher torque than the engine", "higher RPM and higher torque than the engine"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 19, "q": "Operating an engine with too low an oil quantity will produce", "o": ["rising oil temperature and pressure", "falling oil temperature and rising oil pressure", "falling oil pressure and falling oil temperature", "rising oil temperature and dropping oil pressure"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 20, "q": "During a long climb, the cylinder head temperature becomes too high. This can be rectified by", "o": ["closing the cowl flaps", "reducing the climbing indicated air speed", "leaning the mixture to best power", "richening the mixture to full rich and increasing the climbing indicated air speed"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 21, "q": "If maximum power is applied for take-off while the oil temperature is too low", "o": ["the engine components could suffer stresses due to uneven heating", "take-off manifold pressure could be lower than normal", "cylinder head temperature would become too high during take-off", "take-off power would be severely reduced"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 22, "q": "If the oil pressure gauge begins to fluctuate during flight", "o": ["the oil temperature is too high", "the oil pressure gauge is unserviceable", "the oil temperature is too low", "the oil quantity is very low"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 23, "q": "The cause of an abnormally high oil pressure indication could be", "o": ["oil quantity is too low", "oil temperature is too low", "oil temperature is too high", "the oil sump is overfilled"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 24, "q": "If the oil level in an operating engine is below the specified minimum", "o": ["the engine could overheat at high power settings", "oil temperature would be lower than normal", "engine power will be reduced", "there will be a large power loss due to increased engine friction"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 25, "q": "To prevent excessive cooling of an engine during a long descent at a fixed throttle setting it is necessary to", "o": ["decrease indicated air speed and accept a reduced rate of descent", "increase indicated air speed and accept a reduced rate of descent", "decrease indicated air speed and increase rate of descent", "increase indicated air speed and increase rate of descent"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 26, "q": "If oil temperature is rising to near the red line during a long climb a remedy would be", "o": ["decrease power and indicated air speed", "increase power and indicated air speed", "decrease power and increase indicated air speed", "increase power and decrease indicated air speed"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 27, "q": "A high cylinder head temperature during cruise could be due to", "o": ["manifold pressure too low for the selected RPM", "mixture set too rich", "cowl flaps left open", "detonation or pre-ignition"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 28, "q": "Spark plug fouling would be most likely during", "o": ["long periods of ground operation at low power", "climbs at high power settings", "cruising flight in cold weather", "operation in conditions where carburettor ice is likely to form"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 29, "q": "One consequence of operating an engine with excessively high oil temperature is", "o": ["spark plug fouling", "inadequate lubrication of some engine parts", "a very high oil pressure", "sticking exhaust valves"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 30, "q": "Oil pressure is usually measured", "o": ["immediately before the pump", "immediately after the pump", "immediately before the oil enters the engine", "as the oil returns to the sump"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 31, "q": "The rate at which the engine converts heat energy to mechanical energy", "o": ["is the indicated horsepower", "is the friction horsepower", "is the indicated horsepower or torque", "is the torque"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 32, "q": "On a 4-stroke engine, the ignition is timed so that the spark occurs", "o": ["after TDC on the power stroke", "before TDC on the compression stroke", "after TDC on the compression stroke", "before TDC on the power stroke"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 33, "q": "What is the effect of increased humidity on engine power output?", "o": ["no effect at sea level, but reduced at altitude", "power output will decrease at all altitudes because of the decreased density of the fuel/air charge", "the increased density of the fuel/air will increase power output at all altitudes", "no change in power output"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 34, "q": "As the OAT increases, power output from the engine will", "o": ["increase", "decrease", "remain the same", "increase if the humidity also increases"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 35, "q": "On an in-line engine with a 4-stroke cycle, each stroke commences", "o": ["when the piston is at either BDC or TDC", "when the inlet valve is either at BDC or TDC", "when the inlet valve is open", "when the exhaust valve is closed"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 36, "q": "The ratio of the power output of an engine to the power developed by the pistons is known as", "o": ["compression ratio", "mechanical efficiency", "volumetric efficiency", "thermal efficiency"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 37, "q": "The compression ratio of an engine", "o": ["depends on the clearance volume", "depends on the clearance volume and the swept volume", "is the term given to the swept volume", "is the ratio of clearance volume to swept volume"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 38, "q": "The duration of each stroke of a 4-stroke cycle is equivalent to", "o": ["360 degrees of crankshaft rotation", "180 degrees of crankshaft rotation or half a revolution", "720 degrees of crankshaft rotation", "90 degrees of crankshaft rotation"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 39, "q": "During the compression and power strokes of a theoretical 4-stroke cycle, on a horizontally opposed engine", "o": ["the exhaust valve remains closed", "both inlet valves remain open", "the inlet valve closes", "both valves are open"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 40, "q": "To find the firing interval of a 4-stroke engine", "o": ["divide 720 degrees by the number of cylinders", "divide 720 degrees by 4", "divide 260 degrees by 4", "divide 360 degrees by the number of cylinders"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 41, "q": "An engine with a combustion chamber of 13 cubic inches capacity and a swept volume of 78 cubic inches has a compression ratio of", "o": ["5 to 1", "6 to 1", "7 to 1", "8 to 1"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 42, "q": "When the inlet valve is closed after BDC in a 4-stroke engine, the maximum quantity of fuel/air charge entering the cylinder is ensured. This modification to the valve timing is known as", "o": ["valve lead", "valve overlap", "inlet valve lag", "exhaust valve lead"], "a": 2, "e": ""},
+{"t": "Engines & Oil", "n": 43, "q": "Friction horsepower is", "o": ["the difference between the brake horsepower and the rated horsepower", "the difference between the indicated horsepower and the brake horsepower", "brake horsepower divided by indicated power", "indicated horsepower multiplied by mechanical efficiency"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 44, "q": "How many degrees of crankshaft rotation are required to fire all cylinders of an in-line engine using the 4-stroke cycle?", "o": ["360", "720", "depends on the number of cylinders", "180"], "a": 1, "e": ""},
+{"t": "Engines & Oil", "n": 45, "q": "The position of the valves during the intake stroke of an actual four stroke cycle engine is", "o": ["inlet opening at start of stroke and exhaust closed throughout", "inlet and exhaust open at beginning of stroke, exhaust open and inlet closed at end of stroke", "exhaust open but starting to close at start of stroke and inlet open throughout", "inlet open but starting to close at start of stroke and exhaust closed throughout"], "a": 3, "e": ""},
+{"t": "Engines & Oil", "n": 46, "q": "An engine with a combustion chamber of 9 cubic inches capacity and a swept volume of 45 cubic inches has a compression ratio of", "o": ["6 to 1", "5 to 1", "8 to 1", "7 to 1"], "a": 0, "e": ""},
+{"t": "Engines & Oil", "n": 47, "q": "The purpose of a scavenge pump in an oil system is", "o": ["to pump the oil from the sump to the gallery in a wet sump system", "to pump the oil from the gallery to the sump in a wet sump system", "to provide stand-by power if the main oil pump fails in a dry sump system", "to remove the oil from the engine and send it to the external oil tank in a dry sump system"], "a": 3, "e": ""},
+{"t": "Propellers & CSU", "n": 1, "q": "The manifold pressure gauge on an inoperative engine would be expected to read", "o": ["1013.2 hPa", "zero", "the ambient atmospheric pressure", "30 Hg"], "a": 2, "e": ""},
+{"t": "Propellers & CSU", "n": 2, "q": "If a propeller governor senses overspeed it will move the propeller blades towards", "o": ["fine pitch and increased propeller torque", "coarse pitch and increased propeller torque", "fine pitch and decreased propeller torque", "coarse pitch and decreased propeller torque"], "a": 1, "e": ""},
+{"t": "Propellers & CSU", "n": 3, "q": "If a failure in the propeller hub of a CSU caused the blades to lock into one pitch setting the RPM would", "o": ["slowly increase to the red line", "gradually decrease", "change whenever engine power changed", "fluctuate"], "a": 2, "e": ""},
+{"t": "Propellers & CSU", "n": 4, "q": "When power is increased on an engine fitted with a CSU it is good practice to", "o": ["increase RPM before manifold pressure", "increase manifold pressure before RPM", "increase both manifold pressure and RPM together", "increase manifold pressure only with constant RPM"], "a": 0, "e": ""},
+{"t": "Propellers & CSU", "n": 5, "q": "Overboosting of an aircraft engine is most likely to occur", "o": ["when high manifold pressure and low RPM is used", "when the engine RPM is allowed to become too high", "when low manifold pressure and high RPM is used", "when low manifold pressure and low RPM is used"], "a": 0, "e": ""},
+{"t": "Propellers & CSU", "n": 6, "q": "If an aeroplane fitted with a constant speed propeller suffered carburettor icing during cruising flight", "o": ["as the ice built up the RPM would drop", "the RPM would remain the same but the manifold pressure would drop", "both the RPM and the manifold pressure would drop", "both the RPM and the manifold pressure would remain the same"], "a": 1, "e": ""},
+{"t": "Propellers & CSU", "n": 7, "q": "When carburettor heat is applied in an engine fitted with a CSU the presence of carburettor ice would be confirmed by", "o": ["a drop in manifold pressure with no further change at constant RPM", "a drop in manifold pressure and RPM with no further change", "a drop in manifold pressure followed by a slight rise at constant RPM", "a drop in RPM with no further change at constant manifold pressure"], "a": 2, "e": ""},
+{"t": "Propellers & CSU", "n": 8, "q": "If an engine fitted with a CSU is at cruise power and the throttle is closed slightly, the propeller will", "o": ["seek a finer pitch with a drop in RPM", "seek a finer pitch with an increase in RPM", "seek a coarser pitch at constant RPM", "seek a finer pitch at constant RPM"], "a": 3, "e": ""},
+{"t": "Propellers & CSU", "n": 9, "q": "Failure of the speeder spring in the governor of a CSU will cause the blades to move", "o": ["fully coarse with a drop in RPM", "fully fine with a rise in RPM", "fully coarse with a rise in RPM", "fully fine with a drop in RPM"], "a": 1, "e": ""},
+{"t": "Propellers & CSU", "n": 10, "q": "If the sensor lead on a manifold pressure gauge becomes disconnected while cruising at an altitude of 5000 feet, the instrument would be expected to read approximately", "o": ["zero", "30 Hg", "1013 hPa", "25 Hg"], "a": 3, "e": ""},
+{"t": "Propellers & CSU", "n": 11, "q": "If the pitch control lever on a normally aspirated engine fitted with a CSU is moved to decrease RPM with no adjustment made to the throttle, the manifold pressure will", "o": ["remain unaltered", "increase", "decrease", "increase then decrease"], "a": 1, "e": ""},
+{"t": "Propellers & CSU", "n": 12, "q": "Manufacturers publish a list of various MAP and RPM values to achieve a given power setting. The most efficient engine performance can be expected when the pilot selects", "o": ["the combination which gives the lowest MAP and highest RPM for increased volumetric efficiency", "the combination which gives the lowest RPM and highest MAP for increased volumetric efficiency", "the combination which gives the lowest MAP and highest RPM for increased compression ratio", "the combination which gives the lowest RPM and highest MAP for increased compression ratio"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 1, "q": "As mixture is progressively leaned from full rich condition, the engine will experience", "o": ["best power, then rough running, then peak exhaust gas temperature", "best economy, then best power, then rough running", "best power, then best economy, then rough running", "peak exhaust gas temperature, then best power, then best economy"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 2, "q": "If mixture is correctly set to peak EGT, moving the mixture control to full rich with throttle setting unchanged will cause power output to", "o": ["decrease continuously", "increase continuously", "increase then decrease", "decrease then increase"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 3, "q": "If mixture is correctly set for best power, an increase in altitude with no adjustment in mixture or throttle position will produce", "o": ["a richer mixture and less power", "no change in mixture strength", "a leaner mixture and less power", "a richer mixture and more power"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 4, "q": "Operating an engine with high power and the mixture very lean can cause", "o": ["plug fouling and overheating", "backfiring and overheating", "backfiring and low temperatures", "a decrease in indicated air speed and low temperatures"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 5, "q": "The possibility of carbon monoxide being introduced into the cabin is most likely when", "o": ["an exhaust manifold heat exchanger is used on a single engine aircraft", "a fuel-burning heat exchanger is used on a single engine aircraft", "an exhaust manifold heat exchanger is used on a multi engine aircraft", "a fuel-burning heat exchanger is used on a multi engine aircraft"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 6, "q": "For take off under very high density altitude conditions", "o": ["the mixture must be left fully rich", "the mixture must be leaned to peak EGT", "the mixture should be leaned to best economy", "fully rich may be too rich and the mixture should be leaned to smooth running"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 7, "q": "If throttle and mixture levers remain unchanged during a long climb from sea level, the power available will decrease because", "o": ["the decreased air density produces a leaner mixture", "volumetric efficiency reduces and mixture becomes too rich", "a richer mixture produces rising cylinder head temperatures", "decreased air density provides too little cooling of the engine"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 8, "q": "During take off in an aircraft with a turbocharged engine", "o": ["full power must be achieved before the brakes are released", "throttles should be opened fully initially then reduced to rated boost", "throttles should be opened smoothly and care taken not to exceed rated boost", "maximum continuous power should not be exceeded"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 9, "q": "Take off power is", "o": ["the same as maximum continuous power", "higher than maximum continuous power but may be used providing the mixture is fully rich", "used for short periods such as take off, with a time limit of about three minutes", "used only during an emergency take off"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 10, "q": "The purpose of a booster pump is", "o": ["to provide extra power at take off", "to transfer fuel from one tank to another", "to prevent the mixture from becoming too lean at high altitude", "to guard against fuel vapour accumulation (vapour locking)"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 11, "q": "One disadvantage of a carburettor as compared to a fuel injection system is", "o": ["uneven mixture distribution to the cylinders", "it is prone to fuel vaporisation", "it requires a high pressure prime pump for starting", "its relatively high cost"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 12, "q": "Application of carburettor heat when ice is present on an engine fitted with a CSU is accompanied by", "o": ["an initial drop, then an increase in manifold pressure at constant RPM", "a drop in manifold pressure and RPM", "a drop in manifold pressure with constant RPM", "an initial drop, then an increase in manifold pressure and RPM"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 13, "q": "If an engine is flooded and difficult to start, an appropriate technique would be", "o": ["crank continuously", "mixture fully rich, throttle closed and crank", "mixture to idle cut-off, throttle wide open, crank and re-set after start", "crank initially with magnetos off, then turn magnetos on"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 14, "q": "Application of carburettor heat when no ice is present on an engine fitted with a CSU is accompanied by", "o": ["an initial drop, then an increase in manifold pressure", "a drop in manifold pressure and RPM", "a drop in manifold pressure with constant RPM", "an initial drop, then an increase in manifold pressure and RPM"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 15, "q": "The colour of 100 octane low lead aviation fuel is", "o": ["green", "red", "blue", "clear"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 16, "q": "One difference between an exhaust gas temperature gauge and a cylinder head temperature gauge is that", "o": ["the exhaust gas temperature gauge responds more slowly to combustion temperature changes", "the cylinder head temperature gauge responds more slowly to combustion temperature changes", "the exhaust gas temperature gauge is always colour coded", "the cylinder head temperature gauge is a better indicator of mixture condition"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 17, "q": "The fuel flow gauge on many general aviation aeroplanes measures fuel pressure with a transducer and indicates an equivalent fuel flow. One consequence of this is", "o": ["the gauge is absolutely reliable as an indicator of fuel flow", "the gauge does not measure fuel flow directly and may give incorrect readings if the filters or discharge nozzles become blocked", "the gauge is absolutely reliable at normal power settings but may be incorrect at high power", "the gauge is likely to over read at high power settings"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 18, "q": "When using the carburettor heat control on an engine not fitted with a CAT gauge you should", "o": ["use only enough heat to melt the ice", "use partial heat throughout the flight to prevent ice from forming", "use full heat only if the engine is at low power or at idle", "use full heat when gliding or when symptoms are noticed and then return to the off position"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 19, "q": "The flight manual specifies that the fuel required for the aircraft is 100LL. During a daily inspection you notice that the fuel obtained in the fuel drain is red. Engine operation with this fuel would be", "o": ["normal since 100LL should be that colour", "likely to result in reduced engine performance and detonation", "likely to result in oil fouling of the spark plugs", "likely to result in overboosting and engine damage"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 20, "q": "Fluctuating fuel pressure indications, when all other instrument indications are normal, is a likely indication of", "o": ["fuel vaporisation", "detonation", "carburettor ice", "overboosting"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 21, "q": "Throttle ice is the name given to ice that forms as a result of", "o": ["adiabatic cooling due to the sudden pressure drop across the throttle butterfly", "supercooled water droplets striking the external components of the induction system", "the cooling effect of evaporating fuel", "flying when the outside air temperature is below freezing"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 22, "q": "The theoretical maximum range (nil wind) for a piston engine aeroplane is obtained by operating at the IAS that produces the best lift/drag ratio and flying", "o": ["as high as possible", "as low as possible", "at full throttle height", "with fully rich mixture"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 23, "q": "Vaporising of fuel in the fuel lines (vapour locking) can be caused by", "o": ["high engine temperatures and high power", "excessively lean mixtures", "using rich mixtures at high altitudes", "using the boost pump at low engine power"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 24, "q": "If an engine begins to run roughly because of vaporisation of fuel during flight the pilot should", "o": ["operate the boost pump", "richen the mixture", "check that the boost pump is turned off and reduce power", "place the mixture in idle cut-off and turn the boost pump on"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 25, "q": "Carburettor refrigeration ice is most likely to form", "o": ["only with outside air temperatures below freezing", "only with outside air temperatures above freezing", "behind the throttle", "around the fuel nozzle"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 26, "q": "On application of carburettor heat in an aircraft with suspected carburettor icing, the engine immediately starts misfiring and running roughly. The correct action would be", "o": ["leave the carburettor heat on, allowing the ice to melt and the engine to return to normal", "lean the mixture because the application of carburettor heat has richened the mixture", "richen the mixture to overcome the loss in power caused by the rough running", "return the carburettor heat to the off position and descend to a lower altitude and warmer air"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 27, "q": "A yellow band on the carburettor air temperature gauge indicates ice is", "o": ["about to start", "possible", "unlikely", "well advanced"], "a": 1, "e": ""},
+{"t": "Fuel & Carburettors", "n": 28, "q": "The onset of fuel vapour locking in an engine would be indicated by", "o": ["falling manifold pressure", "fluctuating RPM only", "fluctuating fuel pressure", "high fuel consumption"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 29, "q": "Vaporisation of fuel would be most likely to occur at high power settings", "o": ["with hot fuel and low atmospheric pressure", "with cold fuel and high atmospheric pressure", "with hot fuel and high atmospheric pressure", "with cold fuel and low atmospheric pressure"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 30, "q": "If fuel vaporisation occurs during flight, the appropriate pilot action would be", "o": ["place the mixture control to full rich", "increase engine RPM", "change fuel tanks", "operate the fuel boost pump"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 31, "q": "If a forward facing fuel tank vent is bent through 180 degrees so that it is facing backwards", "o": ["the flow of fuel will be hindered by reduced pressure in the tank", "the mixture will become too lean", "the engine will not develop any power", "fuel could leak from the tank through the vent"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 32, "q": "A blocked fuel injector in an aircraft fitted with a pressure transducer fuel metering system can be indicated by", "o": ["a higher than normal fuel pressure reading", "a higher than normal exhaust gas temperature", "a lower than normal fuel flow reading", "a lower than normal fuel pressure reading"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 33, "q": "Carburettor icing in an engine fitted with a CSU can be detected by which of the following cockpit indications?", "o": ["loss of RPM, but unchanged MP", "loss of RPM, but slightly increased MP", "loss of MP, but unchanged RPM", "loss of MP and RPM"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 34, "q": "Which of the following is the most likely consequence of using too low a grade of fuel in an aero-engine?", "o": ["increased lead fouling problems", "slightly increased power output with fewer lead fouling problems", "detonation and power loss", "increased susceptibility to fuel vaporisation or icing"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 35, "q": "The most likely cause of icing in a float type carburettor is", "o": ["low to medium power operations on warm humid days", "high power operations on days when air temperature is around 15°C with high relative humidities", "very cold sub zero air temperatures", "partial or fully closed throttle operations on a very hot day"], "a": 0, "e": ""},
+{"t": "Fuel & Carburettors", "n": 36, "q": "Which of the following would be the most likely cause of a fluctuating fuel pressure indicator?", "o": ["a fuel pump seizure", "a sticking carburettor inlet valve", "a blocked fuel tank vent", "a fuel vapour lock in the fuel line"], "a": 3, "e": ""},
+{"t": "Fuel & Carburettors", "n": 37, "q": "The presence of carburettor icing may be verified by maintaining constant throttle and propeller pitch setting, then applying carburettor heat and noting an immediate", "o": ["increase in MP, with no further change", "increase in MP, then a gradual decrease", "decrease in MP, then a gradual increase", "decrease in MP, with no further change"], "a": 2, "e": ""},
+{"t": "Fuel & Carburettors", "n": 38, "q": "In which of the following operational conditions is the formation of carburettor ice most likely?", "o": ["maximum rate climb", "low power descent", "taxi", "high speed level cruising"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 1, "q": "During take-off in an aircraft with a turbocharged engine", "o": ["full power must be achieved before the brakes are released", "throttles should be opened fully initially then reduced to rated boost", "throttles should be opened smoothly and care taken not to exceed rated boost", "maximum continuous power should not be exceeded"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 2, "q": "Dual ignition on an aircraft engine provides an additional safety factor during flight. It is also necessary to provide", "o": ["extra power from hotter combustion temperature", "efficient combustion of the charge during the power stroke", "longer combustion time and therefore more power", "easier burning of the charge when the mixture is rich"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 3, "q": "An aircraft electrical system operates at approximately constant", "o": ["voltage", "amperage", "power", "resistance"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 4, "q": "If an aircraft with a flat battery is hand started", "o": ["the alternator may be damaged", "the alternator may remain off line after the engine has started", "the alternator must not be turned on after the engine has started", "the alternator may over charge the battery"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 5, "q": "If an alternator failure occurs during flight, the indications to the pilot would be", "o": ["a discharge showing on a left hand zero ammeter", "zero showing on a centre zero ammeter", "an unusually high charge rate showing on a left hand zero ammeter", "a discharge showing on a centre zero ammeter"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 6, "q": "If the electrical load is so high that the alternator cannot supply the demands of the system, the indications would be", "o": ["warning light on and charge showing", "warning light on and discharge showing", "warning light off and charge showing", "warning light off and discharge showing"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 7, "q": "Circuit breakers and fuses protect an electrical circuit from", "o": ["too many volts", "reversing of the current flow", "too many amps", "being left on too long"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 8, "q": "A micro switch is", "o": ["a very very small switch", "a remote switch activated from the cockpit", "a remotely located switch which cannot be directly activated from the cockpit", "a switch in a circuit with a very small current"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 9, "q": "Solenoids allow a heavy circuit to be turned on or off by the use of", "o": ["a strong spring", "high voltage from the battery", "hydraulic pressure", "a lighter current to an electromagnet"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 10, "q": "The capacity of a battery is measured in", "o": ["amp hours", "volts", "amps", "volt hours"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 11, "q": "Vents are required in a battery compartment to ensure that", "o": ["water and dirt are kept out of the vicinity of the battery", "battery acid can drain out of the compartment during charging", "gas pressure cannot build up in the battery compartment", "dangerous gases such as hydrogen do not accumulate near the battery during charging"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 12, "q": "If a magneto earth lead becomes disconnected or breaks", "o": ["that magneto cannot be turned off", "that magneto will not provide any spark", "the engine will 'dead cut' when that magneto is selected", "that magneto will provide intermittent spark"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 13, "q": "The purpose of an impulse coupling on a magneto is to", "o": ["guard against the magneto being turned off accidentally", "produce a strong and retarded spark while the engine is being cranked", "ensure a strong spark is available during high power operation", "obtain an electrical current from the alternator if the magneto fails"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 14, "q": "The purpose of a supercharger or turbocharger is to", "o": ["supply extra fuel to the engine when it is operating at high power", "increase the density of the air in the induction system", "ensure that detonation does not occur at high power settings", "distribute fuel evenly to each cylinder"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 15, "q": "A turbocharged aircraft's manifold pressure shows abnormal fluctuations during a long climb. Select the most likely cause", "o": ["detonation is occurring in one of the cylinders", "there is a leak in the exhaust system", "the wastegate is sticking", "there is a leak in the induction system"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 16, "q": "A leak in the induction system of a turbocharged engine with automatic boost control will be most noticeable", "o": ["during taxi", "at take-off", "during cruise at low level", "on a climb to high level"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 17, "q": "A turbocharged engine with automatic boost control is operating below the critical altitude. A leak developing upstream of the turbine in the exhaust system will result in", "o": ["abnormal fluctuations in the manifold pressure indication", "the wastegate moving towards the closed position", "the wastegate moving towards the open position", "a sudden drop of manifold pressure"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 18, "q": "Prior to an alternator failure at night the left-hand zero ammeter was reading 12 amps. If no electrical loads were turned off, a 20 amp-hour battery could supply the system for approximately", "o": ["30 minutes", "60 minutes", "90 minutes", "100 minutes"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 19, "q": "An aircraft is equipped with a voltmeter. Before start-up with the master switch on, the voltmeter reads 24 volts. The reading that would indicate normal operation during cruise would be", "o": ["24 volts", "less than 24 volts", "28 volts", "varying depending on the load on the system"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 20, "q": "Given the operating currents: VHF Com 2 A, GPS 4 A, Transponder 4 A, Instrument lights 3 A, Rotating beacon 5 A, VHF Nav 2 A, ADF 2 A, Navigation lights 8 A, Strobes 5 A. After an in-flight failure of the alternator the pilot turns off all items except the VHF Com, Transponder and GPS. If the battery has a capacity of 20 amp-hours and was fully charged, the approximate time it could supply the system is", "o": ["150 minutes", "120 minutes", "200 minutes", "60 minutes"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 21, "q": "The function of a rectifier in an electrical system is to", "o": ["convert AC current to DC current", "allow the current to flow in only one direction", "convert DC current to AC current", "maintain a constant system voltage"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 22, "q": "The function of an inverter in an electrical system is to", "o": ["convert AC current to DC current", "allow the current to flow in only one direction", "convert DC current to AC current", "maintain a constant system voltage"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 23, "q": "Your aircraft is equipped with a voltmeter; before start-up with the master switch on it reads 24 volts. After an alternator failure in flight this instrument would be expected to read", "o": ["zero", "more than 24 volts", "less than 24 volts", "24 volts"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 24, "q": "The primary purpose of circuit breakers in aircraft electrical systems is to", "o": ["provide a means of breaking the circuit manually in flight in case of emergency", "prevent the development of open circuits with the possibility of fire", "regulate the voltage applied to various units", "protect electrical units from overloading and reduce the fire hazard from short circuits"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 25, "q": "It is advisable to check magnetos at pre-flight to make sure both are operating and capable of being shut off. This check should be made", "o": ["during engine run-up, before take-off", "at idle speed, as soon as the engine is running smoothly after start-up", "at a throttle setting equivalent to cruising speed", "at full throttle"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 26, "q": "An impulse magneto coupling", "o": ["reduces magneto speed during engine warm up", "advances ignition timing and gives a hotter spark at starting", "retards ignition timing and gives a hotter spark at starting", "gives an automatic spark increase during high speed operation"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 27, "q": "In the event of a failure of the generator or alternator of an aircraft's electrical system there will be an ammeter indication and", "o": ["a high current discharge from battery to generator or alternator", "a deterioration of all electrical services including ignition", "a high discharge showing on a left-hand zero ammeter", "no obvious change in electrical services"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 28, "q": "A pilot should avoid prolonged operation of an electric starter motor as this can cause", "o": ["damage to the gears on the crankshaft and starter motor", "boiling of the electrolyte in the battery", "weakening of the bendix spring", "overheating of the starter motor"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 29, "q": "The magneto ground wire is connected to", "o": ["the nearest steel part of the engine or mounting", "the distributor head", "the magneto switch", "the case of the magneto"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 30, "q": "A dual ignition system on light aircraft engines", "o": ["provides added safety", "produces a stronger spark for easier starting and provides added safety", "provides added safety and produces more efficient combustion", "produces more efficient combustion"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 31, "q": "With the majority of opposed engines, the right-hand magneto", "o": ["fires the left top and the right bottom plugs", "fires the right top and left bottom plugs", "fires the left top spark plug first", "fires both plugs immediately"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 32, "q": "The generator fails just after take-off in an aircraft which has a 48 amp-hour, 24 volt battery. Just prior to failure the centre index ammeter was reading a charge of 5 amps. Without switching off any loads, the approximate maximum interval before the battery goes flat", "o": ["could not be accurately determined", "would be about 4 hours 48 minutes", "would be about 9 hours 36 minutes", "would be about 2 hours"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 33, "q": "An impulse coupling on a magneto", "o": ["may cause pre-ignition if it is too 'hot' for the engine in which it is fitted", "produces easier stopping of the engine", "can be either a high-tension or a low-tension type", "produces a 'hot' spark for easier starting by momentarily increasing the rotational speed of the magneto"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 34, "q": "On a 4-stroke engine, the ignition is timed so that the spark occurs", "o": ["after TDC on the power stroke", "before TDC on the compression stroke", "after TDC on the compression stroke", "before TDC on the power stroke"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 35, "q": "When one magneto is switched OFF in a dual ignition system", "o": ["engine power is reduced because the increased combustion time results in a lower peak combustion pressure later in the power stroke", "the peak combustion pressure is reduced", "the ignition timing will be retarded, i.e. peak pressure will occur late in the power stroke", "engine power is increased"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 36, "q": "If an engine is allowed to operate too long at idling speed", "o": ["the spark plugs may become fouled", "the piston rings may show excessive wear", "the spark plugs will become inoperative", "the piston head may warp"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 37, "q": "A condenser is incorporated in the primary circuit of a magneto to", "o": ["prevent burning of the points", "prevent damage to the armature of the rotating magnet", "prevent sudden collapse of the primary circuit", "permit the current to jump the points at the correct instant"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 38, "q": "Shielding, as employed in aircraft electrical systems, is used for", "o": ["preventing leakage of high voltage", "reducing noise in radio receiving and transmitting equipment", "protecting the pilot from injury by electrical shock", "providing a return ground path for rubber shock mounted equipment"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 39, "q": "A reading of zero on a centre zero ammeter indicates", "o": ["the alternator's voltage has dropped to equal that of the battery", "the alternator has failed", "the battery is fully charged", "the battery is flat"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 40, "q": "A voltage regulator controls alternator output by", "o": ["shorting out the field in the event of overload", "stopping rotation of the alternator when the circuit is overloaded", "introducing a resistance in the alternator lead to the battery in the event of an overload", "varying the current flow to the alternator field coil"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 41, "q": "An aircraft fitted with a voltmeter reads 24 volts prior to start. During cruise, normal operation of the electrical system would be indicated with the voltmeter showing", "o": ["0 volts", "less than 24 volts", "24 volts", "24-28 volts"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 42, "q": "During flight the centre zero ammeter is deflected slightly to the left of centre (slightly below 0 amps). This indicates", "o": ["the battery is fully charged and the alternator is charging the battery", "the electrical load matches the alternator output", "the demand of the electrical system is greater than the alternator output", "the electrical load is less than the alternator output"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 43, "q": "If a left-hand zero ammeter indicates zero during flight", "o": ["the alternator has failed", "all electrical loads are on", "the battery is fully charged", "the battery circuit is switched off"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 44, "q": "If the take-off manifold pressure exceeds rated boost in a turbocharged engine", "o": ["fuel vaporisation will occur", "detonation and engine damage could result", "the engine will back-fire and lose power", "cylinder head temperatures will become too low and power will be less than normal"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 45, "q": "A left-hand zero ammeter shows a constant high charge rate when", "o": ["the alternator has failed", "the alternator voltage is low", "all electrical loads are on", "the battery is fully charged"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 46, "q": "In a turbocharged engine, with an increase in throttle after starting with the wastegate jammed shut, manifold pressure will", "o": ["increase slower than normal", "increase at the normal rate", "increase faster than normal rate", "not increase above existing static pressure"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 47, "q": "In an engine fitted with an automatic wastegate, oil pressure is used to", "o": ["open the wastegate in order to direct more air through the turbine", "close the wastegate in order to direct more air through the turbine", "open the wastegate in order to allow less air to bypass the turbine", "close the wastegate in order to allow more air to bypass the turbine"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 48, "q": "A turbocharged piston engine aircraft fitted with a manual (pilot operated) wastegate is climbing at full throttle with the wastegate partially open. The correct action to maintain a constant manifold pressure as long as possible on climb to cruise altitude would be", "o": ["slowly decrease engine RPM", "slowly richen the mixture", "slowly open the wastegate", "slowly close the wastegate"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 49, "q": "A turbocharged aircraft fitted with an automatic wastegate controlled by engine oil pressure suffers a failure cutting oil pressure to the wastegate control. The effect on engine operation is", "o": ["complete engine failure", "the engine will experience surging", "engine power will be reduced", "the engine will experience an overboost situation"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 50, "q": "When conducting a magneto check during run-up in an aircraft with separate switches for each magneto, there is no change in RPM when the right magneto is switched off then on again, and the engine fails when the left magneto is switched off. A fault which would cause this is", "o": ["the left magneto has failed", "the right magneto has failed", "the left magneto is live", "the right magneto is live"], "a": 1, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 51, "q": "An unexpectedly high MP resulting from throttle advance in a turbocharged engine is most likely due to", "o": ["a wastegate sticking closed", "a wastegate sticking open or closed", "a wastegate sticking open", "too low an oil pressure acting on the piston in the wastegate actuator"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 52, "q": "Lead acid type batteries need to be located in a vented battery box within an aircraft", "o": ["so that internal pressures can be relieved at high operating altitudes", "to allow water to drain away from the battery compartment", "so that airflow directed across the battery keeps it cool", "to dissipate the flammable gases produced as by-products of the chemical reaction within the battery"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 53, "q": "What is the prime purpose of a turbocharger?", "o": ["to increase the range of available RPM", "to lower engine fuel consumption", "to increase the mass air flow of an engine by increasing volumetric efficiency", "to reduce exhaust back pressure and increase the power at altitudes above MSL"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 54, "q": "An aircraft is equipped with a conventional centre zero type ammeter. Such an ammeter displays", "o": ["current flow to and from the battery", "zero or a slightly negative reading during normal operations", "alternator output", "an increasing positive reading if more and more electrical services are switched on in flight"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 55, "q": "A correct interpretation of a centre zero ammeter is that a", "o": ["positive deflection shows that the battery is supplying the current", "zero deflection indicates a generator fault", "negative deflection shows that the generator is charging the battery", "negative deflection shows that the battery is supplying the current"], "a": 3, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 56, "q": "Battery compartment must be properly vented primarily in order to", "o": ["allow fluid seepage during rapid charging", "provide adequate cooling", "dissipate flammable gases", "prevent the battery from boiling"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 57, "q": "The purpose of a turbocharger is to", "o": ["increase the mass airflow to the engine", "increase the temperature and vaporisation of the fuel air charge", "provide a constant rate of climb up to the critical altitude", "decrease the possibility of detonation"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 58, "q": "During normal advancement of the throttle of a turbocharged engine, the MP rose excessively. This could have been caused by", "o": ["an exhaust leak upstream of the waste gate", "an exhaust leak downstream of the waste gate", "the waste gate being jammed shut", "the waste gate being jammed open"], "a": 2, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 59, "q": "Throttle operation during take-off for an engine fitted with a supercharger should be", "o": ["careful operation with attention not to exceed rated boost", "rapid movement to rated boost then slowly to the full throttle position", "slow opening of the throttle to the fully open position", "rapid movement to the fully open position"], "a": 0, "e": ""},
+{"t": "Electrics, Ignition & Turbos", "n": 60, "q": "If a left-hand zero ammeter indicates an unusually high charge rate during flight", "o": ["the electrical system is overloaded", "the indication would be normal if all electrical loads are turned on", "the battery is fully charged", "the alternator has failed"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 1, "q": "Low pressure in a hydraulic accumulator would produce", "o": ["no difference in operation unless the pump failed", "slow operation of services", "an overload of the power pump", "failure of all systems to operate"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 2, "q": "If air has leaked into the lines of a foot operated hydraulic brake system an indication to the pilot would be", "o": ["a spongy feel to the brake pedals", "a normal feel at first application of pressure followed by a slow leak down of the pedal", "no resistance as the brake pedal is easily pushed to the floor", "grabbing of the brakes on application of light foot pressure"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 3, "q": "If a leak occurs in the lines of a foot operated hydraulic brake system an indication to the pilot would be", "o": ["a spongy feel to the brake pedals", "a normal feel at first application of pressure followed by a slow leak down of the pedal", "no resistance as the brake pedal is easily pushed to the floor", "grabbing of the brakes on application of light foot pressure"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 4, "q": "An oleo leg on an undercarriage assembly", "o": ["should be kept correctly inflated with oil and gas", "should be protected from any compression loads", "is operated by the aircraft's hydraulic system", "is only ever used on the nose wheel assembly"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 5, "q": "Low gas pressure in a hydraulic accumulator would cause", "o": ["reduced availability of pressure in an emergency", "failure of all systems", "increased wear on the main power pump", "one way only operation of services"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 6, "q": "A shimmy damper is a device designed to eliminate", "o": ["shocks imposed by landing loads", "vibration in tail wheel aircraft", "shimmy in the main wheels during take off", "vibration in the nose wheel during ground operation"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 7, "q": "Some tachometers display a red arc between certain RPM settings. This indicates", "o": ["where detonation is most likely", "these RPM values must not be used under any circumstances", "never operate the engine at RPM values above that arc", "avoid continuous operation at these RPM values"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 8, "q": "When decreasing power on a turbocharged engine fitted with a CSU it is good practice to", "o": ["decrease manifold pressure before RPM", "decrease RPM before manifold pressure", "decrease RPM and manifold pressure together", "decrease manifold pressure only at constant RPM"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 9, "q": "If a manifold pressure gauge shows a rapidly fluctuating reading", "o": ["the instrument is unserviceable", "detonation is occurring", "fuel vaporisation is occurring", "the engine is seriously overheating"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 10, "q": "The instrument which gives the most direct reading of an aircraft's attitude is", "o": ["the direction indicator", "the turn and balance indicator", "the artificial horizon", "the inertial lead vertical speed indicator"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 11, "q": "If a direction indicator becomes toppled during flight the instrument will", "o": ["need to be reset but will remain serviceable", "be unserviceable for the rest of the flight", "automatically reset itself and remain serviceable", "remain fixed on one heading"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 12, "q": "An altimeter measures the vertical displacement of the aircraft from", "o": ["mean sea level", "the 1013 hPa pressure level", "the pressure reference datum set on the subscale", "the highest ground below the aircraft"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 13, "q": "If the static source becomes blocked during flight the instrument which will read zero is", "o": ["the airspeed indicator", "the altimeter", "the suction gauge", "the vertical speed indicator"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 14, "q": "Selection of the alternate static source will cause errors in", "o": ["the altimeter", "the airspeed indicator", "the vertical speed indicator", "the altimeter and airspeed indicator but not the vertical speed indicator"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 15, "q": "The lag in the reading of the vertical speed indicator is rectified by", "o": ["inertial lead", "the electric vacuum pump", "the alternate static source", "cabin pressurisation"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 16, "q": "In the southern hemisphere, the reading of the magnetic compass will be ahead of the aircraft's actual heading", "o": ["when accelerating on east or west", "when turning onto east or west", "when turning onto north", "when turning onto south"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 17, "q": "In the southern hemisphere the pilot should undershoot the desired heading when turning onto", "o": ["north", "south", "east", "west"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 18, "q": "An exhaust gas temperature gauge", "o": ["operates from the aircraft's electrical system", "has its own battery power", "requires no external electrical power source", "operates only when the master switch is on"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 19, "q": "One effect of a blocked static source on aircraft instruments would be", "o": ["the airspeed indicator over reading on descent", "the airspeed indicator under reading on descent", "the vertical speed indicator over reading on climb", "the altimeter returning to zero"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 20, "q": "The property of gyroscopic precession is the basis of operation of the", "o": ["direction indicator", "turn and balance indicator", "artificial horizon", "vertical speed indicator"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 21, "q": "A cylinder head temperature gauge is usually connected to", "o": ["all cylinders to obtain an average reading", "one cylinder only", "the engine crankcase", "the exiting exhaust gases"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 22, "q": "Which instruments would be affected by the selection of the alternate static source?", "o": ["the altimeter and the airspeed indicator", "the vertical speed indicator and the altimeter", "the altimeter only", "the vertical speed indicator only"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 23, "q": "A pilot notices an unchanging altimeter reading during a steady climb. The most likely cause would be", "o": ["blocked pitot tube", "blocked static source", "failed vacuum pump", "mis-set altimeter subscale"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 24, "q": "If the static source is blocked, the instrument which will overread in a descent is", "o": ["altimeter", "airspeed indicator", "vertical speed indicator", "artificial horizon"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 25, "q": "Engine fire bottles are discharged", "o": ["into the exhaust system", "into the inlet manifold", "into the carburettor inlet filter box", "inside the engine cowling area"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 26, "q": "When the wire loop fire detection system test switch is depressed, what is being tested?", "o": ["the fire detectors fitted to the wire loop within the engine cowling", "the contents of the fire bottles", "the entire system including the fire detectors and the wire loop", "only the continuity of the wire loop without the fire detectors"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 27, "q": "The most common extinguishing agent used in High Rate Discharge extinguishing systems is", "o": ["Carbon Dioxide gas (CO2)", "Dry Chemical Powder", "Halon gas", "Metal Bromide gas"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 28, "q": "High Rate Discharge fire extinguishing systems discharge the extinguishing agent", "o": ["into the cabin on large pressurised aircraft", "into the intake turbine on jet aircraft", "into the carburettor intake on piston engine aircraft", "into the engine nacelle on jet aircraft"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 29, "q": "Wire loop fire detection systems are designed to detect fires", "o": ["in the exhaust section of a turbine", "in the inlet section of a turbine", "in the engine cowl enclosure", "in the cabin and airframe structure on large aircraft"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 30, "q": "Smoke detectors are used to detect possible fires in", "o": ["the engine cowl area", "the engine air intake section", "the turbine outlet section", "the cabin or crew compartment"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 31, "q": "The most likely cause of a rapidly fluctuating cylinder head temperature gauge would be", "o": ["detonation", "pre-ignition", "high oil temperature", "faulty gauge"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 32, "q": "In the southern hemisphere the magnetic compass reading is behind the aircraft's heading when turning through", "o": ["east", "west", "north", "south"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 33, "q": "Fluctuating cylinder head temperature gauge readings are noticed during cruising flight. One possible cause is", "o": ["ice is building up in the induction manifold", "a faulty electrical connection in the instrument circuit", "all of the engine's cylinders are pre-igniting", "the mixture is over rich"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 34, "q": "During descent after encountering icing, the ASI is found to under read by an increasing amount. This could be caused by", "o": ["an ice-blocked static vent", "both ice-blocked pitot and static tubes", "a blocked pitot tube only", "an iced-over airspeed indicator face"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 35, "q": "During the climbout after take-off you note that the altimeter's main scale reading remains unaltered. Which of the following is the most likely cause?", "o": ["fully blocked static vents and pitot tube", "fully blocked pitot tube", "partially blocked static vents", "fully blocked static vents"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 36, "q": "For its operation, the VSI senses", "o": ["dynamic pressure", "rate of change of static pressure", "static pressure", "rate of change of dynamic pressure"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 37, "q": "Force in a hydraulic system is", "o": ["pressure per unit area", "pressure multiplied by area", "pressure divided by area", "pressure multiplied by velocity"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 38, "q": "Pressure in a hydraulic system is defined as", "o": ["force per unit area", "pressure per unit area", "pressure acting only along one axis", "force multiplied by area"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 39, "q": "Hydraulic fluids are", "o": ["virtually incompressible", "easily compressed", "only compressible at pressures over 10000 psi", "highly viscous"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 40, "q": "The reservoir supplies", "o": ["emergency system pressure", "pressure to the pump", "a place to store system fluid when the system is shut down", "a reserve of fluid to compensate for minor leaks"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 41, "q": "An actuating jack may be stopped at any position by", "o": ["stopping the pump", "reversing the selector valve", "placing the selector valve in a neutral position", "stalling the jack"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 42, "q": "In a hydraulic system using a constant displacement pump, system pressure is controlled by", "o": ["the accumulator", "the reservoir", "the pressure regulator", "the pressure relief valve"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 43, "q": "An accumulator may be fitted to a hydraulic system to", "o": ["boost fluid capacity", "provide emergency pressure", "relieve the pump", "cool the fluid"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 44, "q": "A non return valve (check valve) is fitted to a hydraulic circuit to", "o": ["ensure pressure only acts along one axis", "ensure fluid is only used once", "ensure fluid only flows in one direction", "prevent excessive system back pressure"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 45, "q": "A filter bypass circuit is included in some hydraulic systems to", "o": ["prevent fluid flow through the filter if it is already clean", "relieve filter pressure", "keep the fluid flowing in the correct direction", "allow fluid to return to the reservoir if the filter becomes blocked"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 46, "q": "The purpose of the cooler in an aircraft hydraulic system is to", "o": ["cool the fluid after it has passed through an actuating ram", "cool the fluid as it leaves the reservoir", "cool the fluid as it returns from the pressure regulator to the reservoir", "cool the fluid as it leaves the accumulator"], "a": 2, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 47, "q": "A pressure relief valve fitted to an aircraft hydraulic system is designed to", "o": ["protect the system from excessive pressure in the event of a pressure regulator failure", "relieve pump pressure at times of low demand", "provide a vent to allow for thermal expansion", "pressurise the accumulator"], "a": 0, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 48, "q": "A reservoir may be pressurised to provide", "o": ["extra system pressure", "positive fluid supply and reduced foaming", "a backup for the pump", "to dissipate heat"], "a": 1, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 49, "q": "When carrying out a rate-one left turn onto north in the southern hemisphere, the pilot should roll out of the turn on a heading of approximately", "o": ["000°M", "015°M", "345°M", "010°M"], "a": 3, "e": ""},
+{"t": "Hydraulics, Instruments & Fire", "n": 50, "q": "Hydraulic fluid requires which of the following properties?", "o": ["low flashpoint", "high viscosity", "lubricating properties", "low thermal stability"], "a": 2, "e": ""}
+];
+const FINAL_QS = [
+  // ---------- FINAL TEST 1 ----------
+  {t:"Test 1",n:1,q:"The application of carburettor heat when ice has formed in the carburettor will be accompanied by",o:["an increase in cylinder head temperature and an increase in manifold pressure","an immediate drop in manifold pressure followed by an increase in manifold pressure and a richer mixture","a rise in cylinder head temperature due to a leaner mixture","an immediate increase in manifold pressure and a rise in cylinder head temperature"],a:1,e:"Ice takes time to melt, so manifold pressure first drops, then slowly rises, and stays high until the hot air is turned off."},
+  {t:"Test 1",n:2,q:"Symptoms of the formation of carburettor ice in an engine fitted with a CSU are",o:["dropping manifold pressure and rising cylinder head temperature","dropping manifold pressure and dropping RPM","dropping manifold pressure and indicated air speed with constant RPM","dropping manifold pressure and increasing fuel flow"],a:2,e:"Ice restricts airflow, so power and airspeed fall. The CSU holds RPM constant by moving to a finer pitch, so manifold pressure drops and airspeed falls with RPM unchanged."},
+  {t:"Test 1",n:3,q:"An engine is overheating during a climb. An appropriate action to remedy the situation would be",o:["open the cowl flaps, richen the mixture and increase the climbing indicated air speed","increase power and adopt a higher indicated air speed","decrease power and indicated air speed and richen the mixture","open the cowl flaps, lean the mixture and increase the climbing indicated air speed"],a:0,e:"Opening cowl flaps increases cooling airflow, a richer mixture cools the cylinders, and a higher climbing IAS gives more airflow over the engine."},
+  {t:"Test 1",n:4,q:"If an engine running with the mixture leaned to peak EGT is richened to full rich",o:["power will increase continuously","power will decrease continuously","power will decrease then increase","power will increase then decrease"],a:3,d:1,e:"Richening from peak EGT raises power until best power is reached, then power falls as the mixture moves towards full rich."},
+  {t:"Test 1",n:5,q:"An engine is running with the mixture fully rich. Progressive leaning to peak EGT will produce",o:["best power first, followed by best economy then peak EGT","best economy first, followed by best power then peak EGT","best power at peak EGT","best economy at peak EGT"],a:0,d:1,e:"Leaning from full rich passes best power first, then best economy, and finally peak EGT."},
+  {t:"Test 1",n:6,q:"A descent from high altitude where the engines have been leaned to peak EGT is made with no adjustment being made to the mixture. As the descent is continued to sea level",o:["mixture will become too rich due to the increased air density","cylinder head temperature will rise and back firing could occur","the increasing air density will cool the air too rapidly","a leaner mixture will be accompanied by decreasing manifold pressure"],a:1,e:"Denser air leans the mixture further. A lean mixture makes CHT rise and can cause backfiring."},
+  {t:"Test 1",n:7,q:"Operating an engine with too low an oil quantity will produce",o:["rising oil temperature and pressure","falling oil temperature and rising oil pressure","falling oil pressure and falling oil temperature","rising oil temperature and dropping oil pressure"],a:3,e:"Too little oil cannot cool the engine, so the oil overheats, thins and loses pressure."},
+  {t:"Test 1",n:8,q:"Vaporising of fuel in the fuel lines can be caused by",o:["high engine temperature and high power","excessively lean mixtures","overuse of the boost pump at low engine power","using rich mixtures at high altitudes"],a:0,e:"High power pulls fuel through the lines faster, and hot fuel vaporises more easily, especially at low ambient pressure."},
+  {t:"Test 1",n:9,q:"If a heat soaked engine will not start due to fuel vaporisation, an appropriate action would be",o:["crank the engine with mixture lean until it fires","continue cranking the engine with mixture rich and prime pump on","operate the prime pump with the mixture in idle cut off to purge the vapour","wait about 15 minutes then try again with the mixture lean"],a:2,e:"Running the prime pump with the mixture at idle cut-off circulates cool fuel through the system and purges the vapour."},
+  {t:"Test 1",n:10,q:"If an engine begins to run roughly due to vaporisation of fuel during flight the appropriate pilot action would be",o:["operate the boost pump","richen the mixture","check the boost pump is turned off and reduce power","place the mixture in the idle cut off and turn the boost pump on"],a:0,e:"The boost pump helps push fuel through the lines and stops it breaking down into vapour."},
+  {t:"Test 1",n:11,q:"When increasing power on an engine fitted with a CSU it is good practice to",o:["increase RPM before manifold pressure to prevent overboosting","increase manifold pressure before RPM to prevent overboosting","increase manifold pressure and RPM together","increase manifold pressure only as RPM do not affect power"],a:0,e:"Raising RPM first keeps the charge from becoming excessive, which would otherwise cause overboosting."},
+  {t:"Test 1",n:12,q:"Throttle operation during take off with an engine fitted with a supercharger should be",o:["slow opening of the throttle to fully opened position","rapid movement of the throttle to the fully open position","careful operation of the throttle with care not to exceed rated boost","rapid movement to rated boost then slowly to fully open position"],a:2,e:"A supercharger can easily exceed rated boost at low altitude, so the throttle must be opened carefully."},
+  {t:"Test 1",n:13,q:"The purpose of a supercharger fitted to an engine is",o:["to increase power by pumping extra fuel into the cylinders","to increase power by increasing the mass air flow","to increase power by producing an increase in RPM","to increase power by allowing richer mixtures to be used"],a:1,e:"A supercharger compresses the intake air, increasing the mass of air entering the engine, so more fuel can be burnt."},
+  {t:"Test 1",n:14,q:"If a centre zero ammeter indicates an unusually high charge rate during flight the cause could be",o:["a faulty battery","the alternator has failed","the electrical system is overloaded","the indication would be normal if all electrical loads are turned on"],a:0,e:"A continuously high charge rate means the battery is not accepting its charge, which points to a faulty battery."},
+  {t:"Test 1",n:15,q:"Excessive use of the starter motor on an engine which is difficult to start can cause",o:["a burn out of the alternator","will damage the battery","can cause damage to the starter motor solenoid","overheating of the starter motor"],a:3,e:"The starter motor draws an extremely high current, so prolonged use causes rapid heating."},
+  {t:"Test 1",n:16,q:"The use of a lower grade of fuel than specified for an engine can",o:["promote detonation at high power","cause lead fouling of the spark plugs","result in an over lean mixture","increase the risk of vapour locking"],a:0,e:"Lower grade fuel resists detonation less, and detonation at high power can cause serious engine damage."},
+  {t:"Test 1",n:17,q:"Battery compartments are vented because",o:["heat from the battery can cause pressure build up in the compartment","the battery needs air to help keep it cool","dangerous gases such as hydrogen are released when the battery is charged","vents allow water to drain away from the battery compartment"],a:2,e:"Charging a battery releases hydrogen, a highly flammable gas."},
+  {t:"Test 1",n:18,q:"Fuel tank vents should be inspected before flight because",o:["a blockage in the vent can interrupt the fuel supply to the engine","the vent allows excess fuel to escape if the tank is full","a blocked vent increases the risk in the event of fire","the vent must allow dangerous fumes to escape from the tank"],a:0,e:"A blocked vent creates a vacuum as fuel is drawn out, which restricts flow and can cause fuel starvation."},
+  {t:"Test 1",n:19,q:"If the gas pressure is too low in a hydraulic accumulator you would expect",o:["a reduction in system pressure","a reduction in emergency pressure and slower operation of some services","an increased risk of air entering the system","difficulty in using the emergency hand pump"],a:1,e:"The accumulator works like a battery in a hydraulic system, giving emergency pressure and helping the pump, so low gas pressure reduces both."},
+  {t:"Test 1",n:20,q:"The purpose of a shimmy damper is",o:["to prevent the wheels from locking if too much brake is applied","to stop the wheels from rotating after lift off","to absorb undercarriage shocks on rough strips","to prevent nose wheel vibration during ground operation"],a:3,e:"A shimmy damper stops nose wheel vibration (shimmy) during ground operation."},
+  {t:"Test 1",n:21,q:"Unintentional retraction of the undercarriage while on the ground is prevented by",o:["a microswitch on the undercarriage selector","a microswitch on the instrument panel","a microswitch on one of the undercarriage legs","a microswitch on the throttle linkage"],a:2,e:"A microswitch on an undercarriage leg senses weight on the wheels and blocks retraction on the ground."},
+  {t:"Test 1",n:22,q:"An aircraft is parked on a strip with the engine stopped. If the elevation of the strip is 2000 ft above mean sea level, what would the manifold pressure gauge be expected to read?",o:["approximately 30 Hg","approximately 28 Hg","approximately 1013 hPa","approximately 25 Hg"],a:1,e:"Pressure drops about 1 inHg per 1000 ft, so at 2000 ft the gauge reads about 28 inHg (the ambient pressure) with the engine stopped."},
+  {t:"Test 1",n:23,q:"The effect of a blocked static vent during a long climb would be",o:["the airspeed indicator under reading","the airspeed indicator over reading","the altimeter under reading","the altimeter over reading"],a:0,e:"The trapped static pressure stays high as the aircraft climbs, so the airspeed indicator reads lower than it should."},
+  {t:"Test 1",n:24,q:"An altimeter reads the aircraft's vertical displacement from",o:["mean sea level in ISA","mean sea level","the ground","that pressure which is selected on the sub scale of the instrument"],a:3,e:"The altimeter measures ambient pressure and compares it with the subscale setting, showing height as the difference."},
+  {t:"Test 1",n:25,q:"Following the toppling of a directional gyro in flight the instrument will",o:["remain serviceable but must be reset to the correct heading","be unserviceable for the rest of the flight","reset itself automatically","require servicing after landing"],a:0,e:"A toppled directional gyro is not damaged. It only needs to be reset to the correct heading."},
+  {t:"Test 1",n:26,q:"In the southern hemisphere, an aircraft's actual heading will lag behind the compass indication when the aircraft is turning onto",o:["north","south","east","west"],a:0,e:"In the southern hemisphere the compass runs ahead of the true heading when turning onto north, so the actual heading lags behind it."},
+  {t:"Test 1",n:27,q:"If the outside air temperature is +5°C and the relative humidity is 60%, which of the situations described below would be most likely to produce carburettor icing?",o:["cruising at maximum continuous power","climbing at full power","cruising at 65% power","descending at 35% power"],a:3,e:"A partly closed throttle at low power causes a large pressure drop and cooling in the carburettor throat, which makes ice most likely."},
+  {t:"Test 1",n:28,q:"During a dive, if power is not reduced, constant speed propellers may move onto the",o:["fine pitch stops and then slow down","fine pitch stops and then overspeed","coarse pitch stops and then slow down","coarse pitch stops and then overspeed"],a:3,e:"The governor moves the blades to coarse pitch, but once the coarse stops are reached the propeller acts as fixed pitch and overspeeds."},
+  {t:"Test 1",n:29,q:"Using fuel of a lower octane rating than is recommended for an engine can result in",o:["exhaust valve erosion","afterburning","backfiring","detonation"],a:3,e:"Octane rating measures a fuel's resistance to detonation, so a lower octane fuel in a high compression engine is more likely to detonate."},
+  {t:"Test 1",n:30,q:"A shimmy damper is a device designed to control vibration of the",o:["rudder control surface","main wheels during retraction","nose wheel","elevator control surface"],a:2,e:"A shimmy damper controls nose wheel vibration and is common on light training aeroplanes."},
+  {t:"Test 1",n:31,q:"On a colour coded ASI, the maximum landing gear operation speed (VLE) is",o:["marked at the end of a green arc","marked at the top of the white arc","not marked","marked by a radial red line"],a:2,e:"VLE is not on the colour coded ASI. It is usually placarded near the landing gear selector."},
+  {t:"Test 1",n:32,q:"The engine operating conditions most likely to produce fouling of the spark plugs are",o:["high power and lean mixture","high power and rich mixture","low power and lean mixture","low power and rich mixture"],a:3,e:"Low power gives low combustion temperatures, so oil and rich mixture deposits build up on the plugs without burning off."},
+  {t:"Test 1",n:33,q:"With regard to CHT and EGT gauges, which of the following is true",o:["CHT gauges react more quickly to sudden combustion temperature changes","EGT gauges and CHT gauges do not register sudden temperature changes","both gauges register sudden changes in combustion temperature","EGT gauges register sudden changes in combustion temperature more quickly than CHT gauges"],a:3,e:"The cylinder head is a large metal mass and changes temperature slowly, while the EGT probe responds almost instantly."},
+  {t:"Test 1",n:34,q:"In the southern hemisphere the heading indicated by a direct reading magnetic compass will lead an aeroplane's actual heading when turning onto",o:["east","south","north","west"],a:2,e:"The compass leads the actual heading when turning onto north in the southern hemisphere."},
+  {t:"Test 1",n:35,q:"During a climb a high cylinder head temperature can be reduced by",o:["leaning the mixture","increasing the IAS","closing the cowl flaps","decreasing the IAS"],a:1,e:"Higher IAS means more airflow over the air-cooled engine, which improves cooling."},
+  {t:"Test 1",n:36,q:"The function of a pressure relief valve (PRV) in a hydraulic system is to",o:["maintain a constant pressure in the hydraulic accumulator","prevent the system pressure from falling below a pre-set minimum value","prevent a build up of pressure in the system should the pressure regulator fail","regulate the pressure in the system during normal operation"],a:2,e:"The pressure regulator normally controls system pressure. The PRV is a stand-by that stops pressure building up if the regulator fails."},
+
+  // ---------- FINAL TEST 2 ----------
+  {t:"Test 2",n:1,q:"If carburettor ice has formed on an engine fitted with a CSU, the application of carburettor heat will cause",o:["a drop in manifold pressure and a drop in RPM","an initial drop, followed by an increase in manifold pressure at constant RPM","a rise in both manifold pressure and RPM","a rise in manifold pressure and a drop in RPM"],a:1,e:"Carb heat causes an initial drop in manifold pressure, then a slow rise as the ice melts, with RPM held constant by the CSU."},
+  {t:"Test 2",n:2,q:"During a long descent cylinder head temperature becomes too low. This can be rectified by",o:["opening the cowl flaps","adding power and increasing the rate of descent","adding power and decreasing the rate of descent","reducing the indicated airspeed"],a:2,e:"Adding power adds engine heat, and a lower rate of descent reduces the cooling from the airflow."},
+  {t:"Test 2",n:3,q:"During a long climb, the cylinder head temperature becomes too high. This can be rectified by",o:["closing the cowl flaps","reducing the climbing indicated air speed","leaning the mixture to best power","richening the mixture to full rich and increasing the climbing indicated air speed"],a:3,e:"Full rich adds fuel that cools the cylinders most directly, and a higher IAS carries more heat away from the air-cooled engine."},
+  {t:"Test 2",n:4,q:"During take off from a strip where the density altitude is extremely high, the best take off performance would be achieved by setting the mixture control for",o:["fully rich","peak EGT","smooth running","best economy"],a:2,e:"At very high density altitude, full rich gives more fuel than needed and can cause rough running, so the mixture is set for smooth running."},
+  {t:"Test 2",n:5,q:"The best TAS at a given height and manifold pressure would be achieved with the mixture control set for",o:["full rich","best economy","best power","peak EGT"],a:2,e:"The higher the power, the higher the TAS, so best power gives the highest TAS for a given manifold pressure and height."},
+  {t:"Test 2",n:6,q:"If maximum power is applied for take off while the oil temperature is too low",o:["the engine components could suffer stresses due to uneven heating","take off manifold pressure could be lower than normal","cylinder head temperature would become too high during take off","take off power would be severely reduced"],a:0,e:"An air-cooled engine heats quickly, and cold oil is thick, so parts heat and expand unevenly and internal stresses build up."},
+  {t:"Test 2",n:7,q:"Vaporisation of fuel would be most likely to occur at high power settings",o:["with hot fuel and low atmospheric pressure","with cold fuel and low atmospheric pressure","with hot fuel and high atmospheric pressure","with cold fuel and high atmospheric pressure"],a:0,e:"Heat and low ambient pressure both make a liquid vaporise more easily."},
+  {t:"Test 2",n:8,q:"For a rate one turn to the right from 090°M onto 270°M, the time taken to complete the turn and the appropriate heading on which to commence a roll out would be",o:["the turn would take 2 minutes to complete and roll out should commence at 270°M","the turn would take 1 minute to complete and roll out should commence at 260°M","the turn would take 2 minutes to complete and roll out should commence at 280°M","the turn would take 1 minute to complete and roll out should commence at 270°M"],a:1,e:"A rate one turn takes 2 minutes for 360°, so 1 minute for 180°. Rolling out about 10° early at 260°M gives 270°M."},
+  {t:"Test 2",n:9,q:"If the manifold pressure exceeds rated boost in a turbo charged engine",o:["fuel vaporisation would occur","detonation and engine damage could result","the engine would backfire and lose power","cylinder head temperature will rise and power will be less than normal"],a:1,e:"Excess boost forces too much charge into the cylinders, and compression heat can cause detonation and engine damage."},
+  {t:"Test 2",n:10,q:"If failure of a CSU locks the propeller blades at one fixed position",o:["the pilot will not be able to change the propeller RPM","the propeller RPM would change with engine power changes","the engine will gradually lose RPM","the propeller will over speed unless power is reduced"],a:1,e:"With the blades fixed, the propeller behaves as a fixed pitch propeller, so RPM changes with engine power."},
+  {t:"Test 2",n:11,q:"The propeller pitch control is set to fully fine position during the engine run up. This is done to",o:["allow the propeller RPM to indicate engine power","allow the pilot to check the maximum engine RPM available","allow the engine to reach normal operating temperature","prevent RPM from becoming too low at idle power settings"],a:0,e:"In the fully fine position the propeller acts as fixed pitch, so changes in RPM directly show changes in engine power."},
+  {t:"Test 2",n:12,q:"If the oil pressure gauge begins to fluctuate during flight",o:["the oil temperature is too high","the oil pressure gauge is unserviceable","the oil temperature is too low","the oil quantity is very low"],a:3,e:"With very little oil in the sump the pump outlet is uncovered by the aircraft's motion, so pressure drops and rises repeatedly."},
+  {t:"Test 2",n:13,q:"The cause of an abnormally high oil pressure indication could be",o:["oil quantity is too low","oil temperature is too low","oil temperature is too high","the oil sump is overfilled"],a:1,e:"Cold oil is more viscous and offers high resistance to the pump, so pressure rises. Most regulators allow higher pressure when the oil is cold."},
+  {t:"Test 2",n:14,q:"If the oil level in an operating engine is below the specified minimum",o:["the engine could overheat at high power settings","oil temperature would be lower than normal","engine power will be reduced","there will be a large power loss due to increased engine friction"],a:0,e:"Oil also cools the engine, so with too little oil the remaining oil gets hotter and the engine can overheat at high power."},
+  {t:"Test 2",n:15,q:"A centre zero ammeter shows a constant high charge rate when",o:["the alternator has failed","the alternator voltage is low","all electrical loads are on","the battery is faulty"],a:3,e:"A constant high charge rate means the battery is not accepting its charge, so the battery is faulty."},
+  {t:"Test 2",n:16,q:"A left hand zero ammeter indicates zero when",o:["the alternator has failed","all electrical loads are off","the battery is fully charged","the battery circuit is switched off"],a:0,e:"Some output should always reach the battery, so a zero reading means the alternator has failed."},
+  {t:"Test 2",n:17,q:"In an engine fitted with a constant speed unit the onset of fuel vapour locking would be indicated by",o:["falling manifold pressure","fluctuating RPM","fluctuating fuel pressure","high fuel consumption"],a:2,e:"Vapour in the fuel lines is compressible, so fuel pressure drops and fluctuates as liquid flow is interrupted."},
+  {t:"Test 2",n:18,q:"The function of a forward facing fuel tank vent is to",o:["increase the fuel flow at high altitude","provide a positive pressure in the fuel tank","allow fuel to escape if the tank is overfilled","reduce the air pressure in the fuel tank at high speed"],a:1,e:"A forward facing vent picks up total pressure, giving a slight positive pressure in the tank that helps fuel flow."},
+  {t:"Test 2",n:19,q:"The continuous use of a higher grade of fuel than recommended can cause",o:["overboosting of the engine","overheating and detonation","an increased risk of vapour locking","corrosion of internal engine components"],a:3,e:"Lead deposits from higher grade fuel, used in an engine designed for lower grade, are corrosive."},
+  {t:"Test 2",n:20,q:"After hydraulic flaps are lowered in flight, they slowly return towards the up position of their own accord. A possible reason for this problem is",o:["hydraulic oil is leaking from the system","the level of hydraulic oil is too low","the hydraulic accumulator is leaking","the pressure regulator is set too low"],a:0,e:"If the flaps drift up with the selector up, the actuator must be pushing oil out through a leak in the lines."},
+  {t:"Test 2",n:21,q:"If brake pedals feel normal when pressure is applied, but slowly leak down as pressure is maintained",o:["the hydraulic fluid level is low","there is air in the brake lines","the brake pads are badly worn","there is a leak in the system"],a:3,e:"A slow leak down under sustained pressure is the classic symptom of fluid leaking from the lines."},
+  {t:"Test 2",n:22,q:"The manifold pressure gauge of a normally aspirated engine at full power at sea level would read",o:["more than the outside atmospheric pressure","the same as the outside atmospheric pressure","slightly less than the outside atmospheric pressure","about 14.7 Hg"],a:2,e:"With the engine running at full power, manifold pressure sits slightly below ambient pressure, which is what draws air into the engine."},
+  {t:"Test 2",n:23,q:"The most likely cause of a rapidly fluctuating cylinder head temperature gauge would be",o:["detonation","preignition","high oil temperature","a faulty gauge"],a:3,e:"A large metal block such as an engine cannot change temperature rapidly, so a rapidly fluctuating reading points to a faulty gauge."},
+  {t:"Test 2",n:24,q:"If the altimeter reading remains unchanged during a climb the most likely cause would be",o:["the pitot tube has become blocked","the static source has become blocked","the vacuum pump is unserviceable","the case of the altimeter is leaking"],a:1,e:"A blocked static port keeps the pressure in the instrument case constant, so the altimeter does not change during a climb."},
+  {t:"Test 2",n:25,q:"The indication shown on the face of a turn co-ordinator when turning while taxiing on level ground is",o:["a skid away from the direction of turn","the ball remains in the centre while ever the wings are level","a slip in the direction of turn","a bank opposite the direction of turn"],a:0,e:"Any turn on level ground is unbalanced, and inertia pushes the ball away from the centre of the turn, which is a skid."},
+  {t:"Test 2",n:26,q:"During a turn, the reading of a magnetic compass in the southern hemisphere will",o:["lag behind the aircraft when turning onto north","lead ahead of the aircraft when turning onto south","lead ahead of the aircraft when turning onto north","lag behind the aircraft when turning onto east or west"],a:2,e:"In the southern hemisphere the compass leads ahead of the aircraft when turning onto north and lags when turning onto south."},
+  {t:"Test 2",n:27,q:"The engine operating conditions most likely to produce fouled spark plugs are",o:["high power and rich mixture","low power and rich mixture","high power and lean mixture","low power and lean mixture"],a:1,e:"Low power and rich mixture give low combustion temperatures, so oil fouls the plugs without burning off."},
+  {t:"Test 2",n:28,q:"In an engine fitted with a carburettor and a constant speed propeller, the absence of carburettor ice may be confirmed by applying carburettor heat and noting an immediate",o:["decrease in manifold pressure with no further change","increase in manifold pressure with a gradual change","increase in manifold pressure with no further change","decrease in manifold pressure with a gradual change"],a:0,e:"Hot air is less dense than cool air, so manifold pressure drops immediately when carb heat is applied and stays there while hot air is selected."},
+  {t:"Test 2",n:29,q:"Operating an engine with the oil level below the specified minimum is likely to cause",o:["excessive oil consumption","spark plug fouling","engine overheating","oil foaming"],a:2,e:"Oil carries heat away from the engine through the oil cooler, so a low oil quantity means less heat is removed and the engine overheats."},
+  {t:"Test 2",n:30,q:"During flight a centre zero ammeter shows an abnormally high positive reading for an extended period of time. The correct interpretation of this is",o:["electrical instruments will overreact","the alternator has failed and the battery is powering the system","the battery is being overcharged and may boil","no particular meaning"],a:2,e:"A battery that will not accept charge keeps taking high current and heats up. If allowed to continue, it can be severely damaged."},
+  {t:"Test 2",n:31,q:"The purpose of a turbocharger is to",o:["provide a constant rate of climb up to the critical altitude","increase the mass of air flow into the engine","increase the temperature and vaporisation of the fuel air mixture before induction","reduce the possibility of detonation"],a:1,e:"The compressor increases manifold pressure and therefore the mass of air flow, so more fuel can be burnt for more power."},
+  {t:"Test 2",n:32,q:"What is the difference in appearance between aviation gasoline (avgas) and aviation turbine fuel (avtur)?",o:["avgas is blue or green while avtur is red","avgas is red while turbine fuel is green","avgas is clear while turbine fuel is blue or green","avgas is blue or green while turbine fuel is clear"],a:3,e:"Avgas is dyed blue or green to aid identification, while turbine fuel is clear."},
+  {t:"Test 2",n:33,q:"Which instrument indication would suggest that the static vent has become blocked during a climb?",o:["the vertical speed indicator reads zero","all pressure instruments read zero","the altimeter reads zero","the airspeed indicator reads zero"],a:0,e:"A blocked static vent isolates the VSI from changes in ambient pressure, so it reads zero in a climb."},
+  {t:"Test 2",n:34,q:"In a climb from level flight the altimeter reading remains unchanged. A likely cause would be a blockage in the",o:["pitot tube","vacuum pump","static vent"],a:2,e:"A blocked static vent stops the altimeter responding to changes in ambient pressure."},
+  {t:"Test 2",n:35,q:"What effect does the application of carburettor heat have on mixture and power?",o:["mixture becomes leaner and power is unaffected","mixture becomes richer and power is reduced","mixture becomes leaner and power is reduced","mixture becomes richer and power is unaffected"],a:1,e:"Hot air is less dense, so manifold pressure and power drop, while the carburettor keeps supplying the same fuel. The mixture becomes richer."},
+  {t:"Test 2",n:36,q:"If an engine fitted with a fixed waste gate has the throttle fully opened at take-off",o:["the rated boost would be exceeded","the engine would produce 100% of its rated power","the mixture would become too lean","the expected take-off performance would not be achieved"],a:0,e:"A fixed waste gate relies on the pilot monitoring boost. Full throttle at take-off produces too much boost."},
+
+  // ---------- FINAL TEST 3 ----------
+  {t:"Test 3",n:1,q:"The application of carburettor heat on an aircraft fitted with a CSU when ice is not present is accompanied by",o:["a drop in RPM followed by a slight increase in manifold pressure","a drop in manifold pressure followed by a slight rise in manifold pressure at constant RPM","a drop in manifold pressure with no further change and constant RPM","a drop in RPM with no further change"],a:2,e:"Hot air is less dense, so manifold pressure drops. The governor moves to a finer pitch to keep RPM constant. There is no ice to melt, so the change stays while hot air is inducted."},
+  {t:"Test 3",n:2,q:"To prevent excessive cooling of an engine during a long descent at a fixed throttle setting it is necessary to",o:["decrease indicated air speed and accept a reduced rate of descent","increase indicated air speed and accept a reduced rate of descent","decrease indicated air speed and increase rate of descent","increase indicated air speed and increase rate of descent"],a:0,e:"Lower airflow over the air-cooled engine reduces cooling. A lower IAS at the same power also gives a lower rate of descent."},
+  {t:"Test 3",n:3,q:"If oil temperature is rising to near the red line during a long climb a remedy would be",o:["decrease power and indicated air speed","increase power and indicated air speed","decrease power and increase indicated air speed","increase power and decrease indicated air speed"],a:2,e:"Less power means less heat is produced, and a higher IAS gives more airflow to cool the engine."},
+  {t:"Test 3",n:4,q:"A high cylinder head temperature during cruise could be due to",o:["manifold pressure too low for the selected RPM","mixture set too rich","cowl flaps left open","detonation or pre-ignition"],a:3,e:"Detonation and pre-ignition both cause irregular combustion that concentrates heat in the cylinder head, raising CHT."},
+  {t:"Test 3",n:5,q:"Spark plug fouling would be most likely during",o:["long periods of ground operation at low power","climbs at high power settings","cruising flight in cold weather","operation in conditions where carburettor ice is likely to form"],a:0,e:"Oil deposits on the plugs build up at low power, where there is not enough heat to burn them off."},
+  {t:"Test 3",n:6,q:"The EGT setting that would produce the highest indicated air speed would be",o:["fully rich","peak exhaust gas temperature","best power setting","best economy setting"],a:2,e:"At best power the TAS is highest for a given manifold pressure and RPM, and at any cruising level a higher TAS means a higher IAS."},
+  {t:"Test 3",n:7,q:"One consequence of operating an engine with excessively high oil temperature is",o:["spark plug fouling","inadequate lubrication of some engine parts","a very high oil pressure","sticking exhaust valves"],a:1,e:"Very hot oil thins out, so the protective film breaks down and metal contacts metal, causing wear and damage."},
+  {t:"Test 3",n:8,q:"Fuel vaporisation is most likely to occur during",o:["long periods of ground operation","high engine temperatures and low ambient atmospheric pressure","a long power off descent","cruise with mixture leaned for best economy"],a:1,e:"High power and hot fuel both increase vaporisation, and low ambient pressure makes it worse."},
+  {t:"Test 3",n:9,q:"The purpose of a waste gate in a turbo supercharger is to",o:["regulate the speed of the turbine","control the temperature of the exhaust gases","prevent excessive pressure build up in the turbine","control the fuel flow to the engine fuel pump"],a:0,e:"The waste gate lets part of the exhaust bypass the turbine, which controls turbine and compressor speed."},
+  {t:"Test 3",n:10,q:"If a leak develops before the waste gate in an engine fitted with a turbo supercharger",o:["fuel consumption would increase","manifold pressure obtained at any given altitude and throttle position decreases","manifold pressure obtained at any given altitude and throttle position increases","less power is available due to increased exhaust back pressure"],a:1,e:"Less exhaust gas reaches the waste gate, so less gas drives the turbine, the compressor slows and manifold pressure falls."},
+  {t:"Test 3",n:11,q:"The correct setting for the pitch control during engine run-up of an engine fitted with a CSU is",o:["fully coarse during the magneto check","fully fine during the magneto check","normal cruise position","set to hold 1700 RPM"],a:1,e:"In the fully fine position the propeller acts as fixed pitch, so RPM changes show engine power during the magneto check."},
+  {t:"Test 3",n:12,q:"During a descent at high speed and high power the propeller blades of a constant speed propeller will move towards",o:["the fine pitch stops","the coarse pitch stops","the centre of the pitch range","the position of minimum drag"],a:1,e:"Gravity helps the aircraft accelerate, which tends to overspeed the propeller, so the governor moves the blades towards coarse pitch."},
+  {t:"Test 3",n:13,q:"A consequence of a low oil level in an engine is",o:["oil temperature and oil pressure will rise","oil temperature and oil pressure will fall","oil temperature will fall and oil pressure will rise","oil temperature will rise and oil pressure will fall"],a:3,e:"Less oil means the remaining oil gets hotter, and hot oil is thinner, which lowers the oil pressure."},
+  {t:"Test 3",n:14,q:"A device that controls high current flow in an electrical system is",o:["a voltage regulator","a circuit breaker","a condenser","a rectifier"],a:1,e:"Circuit breakers respond to high current flow, which is measured in amps."},
+  {t:"Test 3",n:15,q:"If a centre zero ammeter shows a discharge during flight",o:["the system is operating normally","the battery is flat","the master switch is off","the alternator has failed"],a:3,e:"A discharge reading means the alternator is not charging the battery, so the alternator has failed."},
+  {t:"Test 3",n:16,q:"If a fuel pressure gauge shows rapidly fluctuating readings during flight",o:["fuel vaporisation may be occurring","induction icing may be occurring","the fuel may be detonating within the cylinders","the engine driven fuel pump may have failed"],a:0,e:"Vapour in the fuel lines is compressible, so rapidly fluctuating fuel pressure readings point to vaporisation."},
+  {t:"Test 3",n:17,q:"The colour of 100/130 octane avgas is",o:["red","blue","green","clear"],a:2,e:"100/130 octane avgas is green."},
+  {t:"Test 3",n:18,q:"Comparing a fuel injection system to a carburettor, the fuel injection system is",o:["simpler and less expensive","operated at lower fuel pressure","less prone to induction system icing","less prone to fuel vaporisation"],a:2,e:"Fuel is injected into the inlet port, so there is no evaporative cooling at the throttle. Impact ice can still form in cloud or rain."},
+  {t:"Test 3",n:19,q:"If the accumulator gas pressure in a hydraulic system becomes too low",o:["the system will fail","pressure indicated during operation will be lower but will return to normal after operation of the service","pressure indicated during operation will be higher but will return to normal after operation of the service","system pressure will be lower than normal at all times"],a:1,e:"Low gas pressure lowers the indicated pressure during operation, but it returns to normal once the service has finished."},
+  {t:"Test 3",n:20,q:"A spongy feel in the pedals of a foot operated brake system would most likely be due to",o:["low hydraulic fluid","a leak in the system","wear in the brake mechanism","air in the system lines"],a:3,e:"A spongy pedal feel is the typical symptom of air in the brake lines."},
+  {t:"Test 3",n:21,q:"The undercarriage warning horn in a retractable undercarriage system may be activated by",o:["a squat switch located on the aircraft's nose wheel","the position of the elevator trim","the airspeed indicator","the position of the throttle lever"],a:3,e:"The horn sounds when the throttle is in the low power position with the undercarriage still up. The switch can also be triggered by manifold pressure."},
+  {t:"Test 3",n:22,q:"The pitot heat",o:["should not be operated on the ground except for testing","should be turned off whenever sub zero temperatures are encountered","should always be turned on in rain","should not be operated for long periods of time in flight"],a:0,e:"Pitot heat draws a high current and overheats on the ground, so it should only be used on the ground for testing."},
+  {t:"Test 3",n:23,q:"Comparing the reading of a CHT gauge to that of an EGT gauge",o:["the CHT reacts more quickly to changes in combustion temperature","the EGT reacts more quickly to changes in combustion temperature","the CHT gives better indications of changes in mixture strength","the EGT displays a larger range of temperatures than the CHT"],a:1,e:"The EGT probe responds almost instantly to combustion temperature changes, while the CHT lags because the cylinder head is a large metal mass."},
+  {t:"Test 3",n:24,q:"If an artificial horizon becomes toppled during flight",o:["it will remain unserviceable for the rest of the flight","it will remain serviceable but will take time to re-erect itself","it will require maintenance after landing","it must be manually adjusted before further use"],a:1,e:"The gyro is free to move in pitch and roll. Once toppled it takes time to stabilise, but it stays serviceable."},
+  {t:"Test 3",n:25,q:"Which of the following speeds is not shown on a colour coded air speed indicator?",o:["VNE","VNO","VFE","VLE"],a:3,e:"Undercarriage extension speed (VLE) is shown as a placard next to the gear lever, not on the colour coded ASI."},
+  {t:"Test 3",n:26,q:"If a visible bubble appears in the glass of a magnetic compass",o:["the compass is unserviceable","this is normal and does not imply any unserviceability","the aircraft may be parked on uneven ground","the compass is serviceable but may take longer to indicate a constant heading after a turn"],a:0,e:"The fluid in the compass bowl damps the needle. A bubble means the fluid is leaking out, so the compass is unserviceable."},
+  {t:"Test 3",n:27,q:"During the normal advancement of the throttle on a turbocharged engine, the manifold pressure quickly becomes excessive. This could be caused by",o:["the waste gate being jammed open","the waste gate being jammed shut","an exhaust leak upstream of the waste gate","an exhaust leak downstream of the waste gate"],a:1,e:"If the waste gate is jammed shut, all exhaust gas drives the turbine and manifold pressure rises excessively."},
+  {t:"Test 3",n:28,q:"The component which prevents an excessively high current flow in an aircraft's electrical system is a",o:["circuit breaker","capacitor","current rectifier","voltage regulator"],a:0,e:"A circuit breaker protects electrical equipment by breaking the circuit when current is too high."},
+  {t:"Test 3",n:29,q:"A negative deflection of the centre zero ammeter means that",o:["the alternator is charging normally","the battery is faulty","the alternator is supplying current to the system","the battery is supplying current to the system"],a:3,e:"A negative deflection means the battery is discharging, supplying current to the system."},
+  {t:"Test 3",n:30,q:"The manifold pressure gauge indication on a normally aspirated engine operating at full power should be",o:["slightly below the ambient atmospheric pressure","slightly above the ambient atmospheric pressure","significantly below the ambient atmospheric pressure","significantly above the ambient atmospheric pressure"],a:0,e:"A normally aspirated engine at full power shows manifold pressure just below ambient."},
+  {t:"Test 3",n:31,q:"During a climb a high cylinder head temperature can be reduced by",o:["increasing the IAS","increasing the rate of climb","decreasing the IAS","decreasing the rate of climb"],a:0,e:"Higher IAS means more airflow over the air-cooled engine, which improves cooling."},
+  {t:"Test 3",n:32,q:"When changing power on an engine fitted with a constant speed unit",o:["RPM should always be changed before manifold pressure","RPM should be changed before manifold pressure when power is increased and manifold pressure should be changed before RPM when power is decreased","RPM should be changed before manifold pressure when power is decreased and manifold pressure should be changed before RPM when power is increased","manifold pressure should always be changed before RPM"],a:1,e:"When increasing power, RPM goes up first to avoid overboosting. When decreasing power, manifold pressure comes down first."},
+  {t:"Test 3",n:33,q:"The correct interpretation of a centre zero ammeter is",o:["a positive deflection indicates that the battery is supplying the current","a zero indication shows the alternator is faulty","a negative deflection indicates the alternator is charging the battery","a negative deflection indicates that the battery is supplying the current"],a:3,e:"A negative deflection means the battery is supplying current (discharging)."},
+  {t:"Test 3",n:34,q:"For a given power setting which of the statements is true for mixture adjustment?",o:["changing mixture does not affect airspeed","the highest airspeed is obtained with best power setting","the highest airspeed is obtained with mixture fully rich","the highest airspeed is obtained with the mixture set to peak EGT"],a:1,e:"At a given power setting, best power gives the highest TAS and therefore the highest airspeed."},
+  {t:"Test 3",n:35,q:"In a hydraulic system with an accumulator, a lower than normal gas pressure in the accumulator may result in",o:["less hydraulic fluid stored in the accumulator","a higher system operating pressure","increased friction and vibration in the system","reduced dampening of pressure surges within the system"],a:3,e:"The gas in the accumulator absorbs pressure surges. With lower gas pressure, it cannot absorb them as well."},
+  {t:"Test 3",n:36,q:"With a constant throttle setting maintained, excessive cooling of an engine on descent may be prevented by",o:["increasing the rate of descent","opening the cowl flaps","maintaining the mixture setting for best power","reducing the IAS"],a:3,e:"Less airflow over the air-cooled engine reduces the cooling. Reducing the IAS does this."}
+];
+const QUESTIONS = [...CHAPTER_QS, ...FINAL_QS];
+
+const DIAGRAMS = {
+  1: `<svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mixture control positions and power and EGT curves" font-family="system-ui, sans-serif" font-size="13">
+  <g style="stroke:var(--text);fill:var(--text)">
+    <text x="300" y="20" text-anchor="middle" font-weight="600" style="stroke:none">Mixture control positions</text>
+    <line x1="60" y1="60" x2="540" y2="60" stroke-width="3"/>
+    <polygon points="545,60 535,55 535,65" style="fill:var(--text)"/>
+    <text x="545" y="48" style="stroke:none" font-size="11">LEAN</text>
+    <text x="60" y="48" style="stroke:none" font-size="11">RICH</text>
+    <circle cx="60" cy="60" r="7" style="fill:var(--accent);stroke:none"/>
+    <circle cx="210" cy="60" r="7" style="fill:var(--accent);stroke:none"/>
+    <circle cx="360" cy="60" r="7" style="fill:var(--accent);stroke:none"/>
+    <circle cx="510" cy="60" r="7" style="fill:var(--accent);stroke:none"/>
+    <text x="60" y="88" text-anchor="middle" style="stroke:none">Full rich</text>
+    <text x="210" y="88" text-anchor="middle" style="stroke:none">Best power</text>
+    <text x="360" y="88" text-anchor="middle" style="stroke:none">Best economy</text>
+    <text x="510" y="88" text-anchor="middle" style="stroke:none">Peak EGT</text>
+  </g>
+  <g style="stroke:var(--muted);fill:var(--muted)">
+    <line x1="60" y1="130" x2="60" y2="270" stroke-width="1.5"/>
+    <line x1="60" y1="270" x2="540" y2="270" stroke-width="1.5"/>
+    <line x1="210" y1="130" x2="210" y2="270" stroke-dasharray="4 4" stroke-width="1"/>
+    <line x1="360" y1="130" x2="360" y2="270" stroke-dasharray="4 4" stroke-width="1"/>
+    <line x1="510" y1="130" x2="510" y2="270" stroke-dasharray="4 4" stroke-width="1"/>
+    <text x="300" y="292" text-anchor="middle" style="stroke:none" font-size="12">Mixture leaned from full rich towards peak EGT</text>
+  </g>
+  <path d="M60,235 Q150,140 210,135 Q340,130 540,250" fill="none" style="stroke:var(--accent)" stroke-width="3"/>
+  <path d="M60,262 Q300,258 510,140 L540,160" fill="none" style="stroke:#f97316" stroke-width="3"/>
+  <text x="250" y="130" style="fill:var(--accent);stroke:none" font-weight="600">Power</text>
+  <text x="440" y="150" style="fill:#f97316;stroke:none" font-weight="600">EGT</text>
+  <text x="210" y="155" text-anchor="middle" style="fill:var(--text);stroke:none" font-size="11">best power</text>
+  <text x="510" y="128" text-anchor="middle" style="fill:var(--text);stroke:none" font-size="11">peak EGT</text>
+</svg>`
+};
+
+const LET = ["a","b","c","d"];
+let pool = [], idx = 0, score = 0, wrongList = [], answered = false, selected = null;
+const starred = new Set();
+
+const $ = id => document.getElementById(PFX + id);
+const show = (id, on) => $(id).classList.toggle("hidden", !on);
+const qkey = q => q.t + "|" + q.n;
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function listFor(v) {
+  if (v === "starred") return QUESTIONS.filter(q => starred.has(qkey(q)));
+  if (v === "all") return [...QUESTIONS];
+  if (v === "shuffled") return [...QUESTIONS];
+  if (v === "chap") return QUESTIONS.filter(q => CHAPTER_QS.includes(q));
+  if (v === "finals") return QUESTIONS.filter(q => q.t.startsWith("Test"));
+  return QUESTIONS.filter(q => q.t === v);
+}
+
+function populateMenu() {
+  const sel = $("testSel");
+  [["all", "ALL questions (chapters + final tests)"], ["shuffled", "ALL QUESTIONS SHUFFLED"], ["chap", "All chapter topics"], ["Engines & Oil", "Engines & Oil"], ["Propellers & CSU", "Propellers & CSU"], ["Fuel & Carburettors", "Fuel & Carburettors"], ["Electrics, Ignition & Turbos", "Electrics, Ignition & Turbos"], ["Hydraulics, Instruments & Fire", "Hydraulics, Instruments & Fire"], ["finals", "ALL final tests (1, 2 and 3)"], ["Test 1", "Final Test 1"], ["Test 2", "Final Test 2"], ["Test 3", "Final Test 3"], ["starred", "Starred questions"]]
+    .forEach(([v, label]) => { const o = document.createElement("option"); o.value = v; o.textContent = label; sel.appendChild(o); });
+}
+
+function startQuiz(source) {
+  let list, shuffleIt;
+  if (source) { list = source; shuffleIt = $("shuffleChk").checked; }
+  else { list = listFor($("testSel").value); shuffleIt = $("shuffleChk").checked || $("testSel").value === "shuffled"; }
+  if (!list.length) { alert("No questions in this set yet. Star some questions or pick another set."); return; }
+  pool = (shuffleIt ? shuffle([...list]) : [...list]).map(shuffleOpts);
+  idx = 0; score = 0; wrongList = []; sel = [];
+  show("setup", false); show("results", false); show("quiz", true);
+  renderQ();
+}
+
+function updateStar() {
+  const on = starred.has(qkey(pool[idx]));
+  $("starBtn").classList.toggle("on", on);
+  $("starBtn").textContent = on ? "★" : "☆";
+}
+
+function toggleStar() {
+  const k = qkey(pool[idx]);
+  starred.has(k) ? starred.delete(k) : starred.add(k);
+  updateStar();
+}
+
+function renderQ() {
+  answered = false; selected = null;
+  const q = pool[idx];
+  updateStar();
+  $("counter").textContent = `${q.t} · Q${q.n} · ${idx + 1} of ${pool.length}`;
+  $("scoreLive").textContent = `Score: ${score}`;
+  $("bar").style.width = (idx / pool.length * 100) + "%";
+  $("qtext").textContent = q.q;
+  const dg = $("qdiag");
+  dg.innerHTML = q.d ? DIAGRAMS[q.d] : ""; show("qdiag", !!q.d && diagOn); setDiagBtn(!!q.d);
+  const opts = $("opts");
+  opts.innerHTML = "";
+  q.o.forEach((text, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="letter">[${LET[i]}]</span>${text}`;
+    b.onclick = () => choose(i);
+    opts.appendChild(b);
+  });
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  if (sel[idx] !== undefined) { selected = sel[idx]; review(); }
+  setAction();
+}
+
+function choose(i) {
+  if (answered) return;
+  selected = i;
+  ROOT.querySelectorAll(".opt").forEach((b, k) => b.classList.toggle("selected", k === i));
+  setAction();
+}
+
+function submit() {
+  if (answered || selected === null) return;
+  answered = true;
+  const i = selected, q = pool[idx];
+  if (sel[idx] === undefined) sel[idx] = i;
+  const btns = ROOT.querySelectorAll(".opt");
+  btns.forEach(b => b.disabled = true);
+  btns[q.a].classList.add("correct");
+  const fb = $("feedback");
+  if (i === q.a) {
+    score++;
+    fb.className = "feedback good";
+    fb.textContent = "Correct!";
+  } else {
+    btns[i].classList.add("wrong");
+    wrongList.push({ ...q, chosen: i });
+    fb.className = "feedback bad";
+    fb.textContent = `Not quite. The correct answer is [${LET[q.a]}] ${q.o[q.a]}`;
+  }
+  $("scoreLive").textContent = `Score: ${score}`;
+  const ex = document.createElement("div");
+  ex.className = "expl";
+  ex.innerHTML = "<strong>Explanation:</strong> " + q.e;
+  if (q.e) fb.appendChild(ex);
+  setAction();
+}
+
+function setDiagBtn(has) {
+  let b = document.getElementById("agk-diagBtn");
+  if (!b) {
+    b = document.createElement("button");
+    b.id = "agk-diagBtn"; b.className = "ghost"; b.style.marginBottom = "10px";
+    $("qdiag").parentNode.insertBefore(b, $("qdiag"));
+    b.onclick = () => { diagOn = !diagOn; show("qdiag", diagOn && !!pool[idx].d); setDiagBtn(!!pool[idx].d); };
+  }
+  b.style.display = has ? "" : "none";
+  b.textContent = diagOn ? "Hide diagram" : "Show diagram";
+}
+
+function review() {
+  answered = true;
+  const i = selected, q = pool[idx];
+  const btns = ROOT.querySelectorAll(".opt");
+  btns.forEach(b => b.disabled = true);
+  btns[q.a].classList.add("correct");
+  if (i !== q.a) btns[i].classList.add("wrong");
+  const fb = $("feedback");
+  fb.className = i === q.a ? "feedback good" : "feedback bad";
+  fb.textContent = i === q.a ? "Correct!" : `Not quite. The correct answer is [${LET[q.a]}] ${q.o[q.a]}`;
+  if (q.e) { const ex = document.createElement("div"); ex.className = "expl"; ex.innerHTML = "<strong>Explanation:</strong> " + q.e; fb.appendChild(ex); }
+}
+
+function prevQ() {
+  if (idx > 0) { idx--; renderQ(); }
+}
+
+function nextQ() {
+  if (idx < pool.length - 1) { idx++; renderQ(); }
+  else showResults();
+}
+
+function showResults() {
+  show("quiz", false); show("results", true);
+  const pct = Math.round(score / pool.length * 100);
+  $("finalScore").textContent = `${score} / ${pool.length} (${pct}%)`;
+  $("finalMsg").textContent = pct >= 80 ? "Great work. Review the misses below." :
+                              pct >= 50 ? "Solid start. Retry the missed questions to lock them in." :
+                              "Keep going. Work through the misses, then retry them.";
+  const ol = $("missedList");
+  ol.innerHTML = "";
+  if (!wrongList.length) {
+    ol.innerHTML = "<li>No misses. Nice.</li>";
+    $("retryBtn").disabled = true;
+  } else {
+    $("retryBtn").disabled = false;
+    wrongList.forEach(q => {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${q.t} Q${q.n}:</strong> ${q.q}<br>
+        <span style="color:var(--bad)">Your answer: [${LET[q.chosen]}] ${q.o[q.chosen]}</span><br>
+        <span style="color:var(--good)">Correct: [${LET[q.a]}] ${q.o[q.a]}</span><br>
+        <span style="color:var(--muted)">${q.e}</span>`;
+      ol.appendChild(li);
+    });
+  }
+}
+
+function setAction() {
+  const btn = $("actionBtn");
+  if ($("prevBtn")) $("prevBtn").disabled = idx === 0;
+  if (answered) {
+    btn.textContent = idx === pool.length - 1 ? "See results" : "Next";
+    btn.disabled = false;
+  } else {
+    btn.textContent = "Submit";
+    btn.disabled = selected === null;
+  }
+}
+
+$("startBtn").onclick = () => startQuiz();
+$("actionBtn").onclick = () => (answered ? nextQ() : submit());
+if ($("prevBtn")) $("prevBtn").onclick = prevQ;
+$("quitBtn").onclick = () => { if (confirm("Quit this quiz and see your results so far?")) showResults(); };
+$("retryBtn").onclick = () => startQuiz(wrongList.map(({ chosen, ...q }) => q));
+$("restartBtn").onclick = () => { show("results", false); show("quiz", false); show("setup", true); };
+$("starBtn").onclick = toggleStar;
+$("themeBtn").onclick = () => {
+  const root = document.documentElement;
+  const dark = root.getAttribute("data-theme") === "dark" ||
+    (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+  root.setAttribute("data-theme", dark ? "light" : "dark");
+};
+
+document.addEventListener("keydown", e => {
+  if (ROOT.classList.contains("hidden")) return;
+  if ($("quiz").classList.contains("hidden")) return;
+  if (!answered && /^[a-dA-D]$/.test(e.key)) choose(LET.indexOf(e.key.toLowerCase()));
+  else if (e.key === "Enter" && !$("actionBtn").disabled) $("actionBtn").click();
+});
+
+populateMenu();
+
+  const cnt = document.getElementById("count-agk");
+  if (cnt) cnt.textContent = QUESTIONS.length + " questions";
+})();
+
+
+
+</script>
+</body>
+</html>

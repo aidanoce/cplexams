@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CPL CASA EXAM PREP - ATPL</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --card: #ffffff; --text: #1d2330; --muted: #5b6475;
+    --accent: #2563eb; --good: #15803d; --bad: #b91c1c; --border: #d6dae3;
+    --good-bg: #dcfce7; --sky-top: #d6e8fb; --bad-bg: #fee2e2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c; --card: #1c2130; --text: #e6e9f0; --muted: #9aa3b5;
+      --accent: #60a5fa; --good: #4ade80; --bad: #f87171; --border: #2f3646;
+      --good-bg: #163d26; --sky-top: #16203a; --bad-bg: #4a1d1d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c; --card: #1c2130; --text: #e6e9f0; --muted: #9aa3b5;
+    --accent: #60a5fa; --good: #4ade80; --bad: #f87171; --border: #2f3646;
+    --good-bg: #163d26; --sky-top: #16203a; --bad-bg: #4a1d1d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: linear-gradient(180deg, var(--sky-top) 0, var(--bg) 420px) var(--bg);
+    margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.5;
+    padding: env(safe-area-inset-top, 0px) 12px env(safe-area-inset-bottom, 0px);
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><g fill='%23708090' transform='rotate(-20 90 90)'><path d='M90 22 C94 22 96 26 96 32 L96 70 L150 96 L150 106 L96 96 L94 136 L110 148 L110 156 L90 150 L70 156 L70 148 L86 136 L84 96 L30 106 L30 96 L84 70 L84 32 C84 26 86 22 90 22 Z'/></g></svg>");
+    background-size: 180px 180px; opacity: .10;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 16px 0 40px; position: relative; z-index: 1; }
+  h1 { font-size: 1.35rem; margin: 8px 0 4px; }
+  .sub { color: var(--muted); font-size: .9rem; margin-bottom: 16px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  select, button {
+    font: inherit; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  .progress { height: 6px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+  .progress > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+  .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .85rem; margin-bottom: 12px; }
+  .qtext { font-size: 1.05rem; margin: 6px 0 14px; white-space: pre-line; }
+  .qhead { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+  .star { font-size: 1.5rem; background: none; border: none; color: var(--muted); padding: 0 4px; line-height: 1; }
+  .star.on { color: #f5b301; }
+  .topic { font-size: .8rem; color: var(--accent); margin: -6px 0 10px; }
+  .expl { margin-top: 8px; color: var(--text); font-size: .93rem; }
+  .qimg { max-width: 100%; display: block; margin: 6px 0 12px; background: #fff; border-radius: 8px; padding: 6px; }
+  .qnote { font-size: .8rem; color: var(--muted); font-style: italic; margin-top: -8px; margin-bottom: 12px; }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    text-align: left; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); font-size: .98rem; width: 100%;
+  }
+  .opt .letter { display: inline-block; width: 26px; font-weight: 600; color: var(--muted); }
+  .opt:hover:not(:disabled) { border-color: var(--accent); }
+  .opt.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .opt.correct { background: var(--good-bg); border-color: var(--good); }
+  .opt.wrong { background: var(--bad-bg); border-color: var(--bad); }
+  .feedback { margin-top: 14px; padding: 10px 12px; border-radius: 8px; font-size: .95rem; display: none; }
+  .feedback.good { display: block; background: var(--good-bg); color: var(--good); }
+  .feedback.bad { display: block; background: var(--bad-bg); color: var(--bad); }
+  .nav { display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .score-big { font-size: 2.2rem; font-weight: 700; margin: 6px 0; }
+  .missed { margin-top: 12px; }
+  .missed li { margin-bottom: 10px; }
+  .hidden { display: none !important; }
+  .toggle { color: var(--muted); font-size: .9rem; display: flex; align-items: center; gap: 6px; }
+  .theme-btn { margin-left: auto; }
+  .footer-note { color: var(--muted); font-size: .8rem; margin-top: 16px; }
+
+  .qdiag { background: var(--card); border-radius: 8px; margin: 4px 0 14px; }
+  .qdiag svg { width: 100%; height: auto; display: block; }
+
+  .hub-head { display:flex; align-items:center; gap:10px; }
+  .cards { display:grid; grid-template-columns: 1fr; gap:14px; margin-top:8px; }
+  @media (min-width: 620px) { .cards { grid-template-columns: 1fr 1fr; } }
+  .card { text-align:left; background: var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; color:var(--text); font: inherit; }
+  .card:hover { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .card svg { width:100%; height:auto; display:block; border-radius:10px; background: var(--sky-top); margin-bottom:12px; }
+  .card h2 { font-size:1.1rem; margin:0 0 4px; }
+  .card p { margin:0; color:var(--muted); font-size:.9rem; }
+  .count { display:inline-block; margin-top:8px; color:var(--accent); font-size:.85rem; font-weight:600; }
+  .card-img { width:100%; height:auto; display:block; border-radius:10px; background:var(--sky-top); margin-bottom:12px; }
+  .badge { display:inline-block; margin-top:8px; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--accent); color:#fff; font-size:.75rem; font-weight:600; }
+  .study-item { border:1px solid var(--border); border-radius:10px; padding:10px 14px; margin:12px 0; background:var(--card); }
+  .study-item summary { cursor:pointer; font-weight:600; }
+  .study-img { width:100%; height:auto; display:block; border-radius:8px; margin:10px 0; background:#fff; }
+  .study-body { line-height:1.5; }
+  .back { margin-bottom:12px; }
+  .app-head h1 { font-size:1.25rem; }
+.site-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:12px 8px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
+.site-tabs a,.site-tabs span{padding:8px 18px;border-radius:8px;border:1px solid var(--border);color:var(--text);text-decoration:none;font-weight:600;font-size:.95rem;background:var(--bg)}
+.site-tabs a.active,.site-tabs span.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.site-tabs span.soon{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<nav class="site-tabs"><a href="index.html" class="">Home</a><a href="cpl.html" class="">CPL</a><a href="atpl.html" class="active">ATPL</a><a href="irex-questions.html" class="">IREX</a><a href="rpl.html" class="">RPL</a><a href="ppl.html" class="">PPL</a></nav>
+<main style="max-width:720px;margin:40px auto;padding:0 16px">
+  <h1>ATPL</h1>
+  <p>ATPL subjects will be added here. Each subject will have its own page, linked from this page.</p>
+</main>
+</body>
+</html>
